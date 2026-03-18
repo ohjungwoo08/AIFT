@@ -36,7 +36,7 @@ app.get('/', async (req, res) => {
     await tempClient.connect();
     const result = await tempClient.query('SELECT name FROM test LIMIT 1');
     const name = result.rows.length > 0 ? result.rows[0].name : '이름 없음';
-    res.send(`<h1>HELLO ${name}</h1>`);
+    res.send(`<h1>HELLO ${name}</p>`);
     console.log(`출력 완료: HELLO ${name}`);
   } catch (err) {
     res.status(500).send('DB 연결 에러');
