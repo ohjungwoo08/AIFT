@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Neon Database query test",
   "main": "index.js",
+  "license": "MIT",
   "scripts": {
     "start": "node index.js"
   },
