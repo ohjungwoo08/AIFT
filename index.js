@@ -1,35 +1,50 @@
+const express = require('express');
 const { Client } = require('pg');
 
-// Render의 환경 변수(DATABASE_URL) 사용
+const app = express();
+const port = process.env.PORT || 3000;
+
+// SSL 경고를 없애기 위해 연결 옵션 최적화
 const client = new Client({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    // 보안 경고를 방지하고 Neon 서버와의 연결을 허용함
-    rejectUnauthorized: false 
-  }
+  connectionString: process.env.DATABASE_URL + "?sslmode=no-verify",
 });
 
-async function run() {
+async function getName() {
   try {
-    // 1. 데이터베이스 연결
     await client.connect();
-    
-    // 2. test 테이블에서 name 하나만 조회
-    // 데이터가 여러 개일 수 있으므로 LIMIT 1을 사용합니다.
     const res = await client.query('SELECT name FROM test LIMIT 1');
-    
-    // 3. 결과 출력
-    if (res.rows.length > 0) {
-      console.log(`HELLO ${res.rows[0].name}`);
-    } else {
-      console.log('데이터베이스에 레코드가 없습니다.');
-    }
+    return res.rows.length > 0 ? res.rows[0].name : '데이터 없음';
   } catch (err) {
-    console.error('에러 발생:', err.message);
+    console.error('DB 쿼리 에러:', err.message);
+    return '에러 발생';
   } finally {
-    // 4. 연결 종료 (프로세스가 깔끔하게 끝나도록 함)
+    // 서버가 계속 떠 있어야 하므로 client.end()는 호출하지 않거나 
+    // 매 요청마다 연결/해제를 반복해야 합니다. 
+    // 여기서는 테스트를 위해 연결을 유지하지 않고 매번 닫는 방식으로 짭니다.
     await client.end();
   }
 }
 
-run();
+// 브라우저에서 접속했을 때 보일 화면
+app.get('/', async (req, res) => {
+  // 매번 새로운 클라이언트를 생성하여 연결 (서버 종료 방지용)
+  const tempClient = new Client({
+    connectionString: process.env.DATABASE_URL + "?sslmode=no-verify",
+  });
+  
+  try {
+    await tempClient.connect();
+    const result = await tempClient.query('SELECT name FROM test LIMIT 1');
+    const name = result.rows.length > 0 ? result.rows[0].name : '이름 없음';
+    res.send(`<h1>HELLO ${name}</h1>`);
+    console.log(`출력 완료: HELLO ${name}`);
+  } catch (err) {
+    res.status(500).send('DB 연결 에러');
+  } finally {
+    await tempClient.end();
+  }
+});
+
+app.listen(port, () => {
+  console.log(`서버가 포트 ${port}에서 실행 중입니다.`);
+});
