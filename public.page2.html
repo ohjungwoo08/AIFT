@@ -1,9 +1,34 @@
 <!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"><title>Page 2</title></head>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page 2 - 프로젝트 정보</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding-top: 50px; background-color: #f0f2f5; }
+        .card { background: white; padding: 30px; border-radius: 15px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { color: #1a73e8; }
+        .btn { 
+            padding: 12px 24px; margin: 10px; font-size: 16px; cursor: pointer;
+            border: none; border-radius: 5px; color: white; transition: 0.3s;
+        }
+        .btn:hover { opacity: 0.8; }
+        .btn-home { background-color: #5f6368; }
+        .btn-drive { background-color: #34a853; } /* 구글 드라이브 느낌의 초록색 */
+    </style>
+</head>
 <body>
-    <h1>페이지 2: 정보 확인</h1>
-    <p>AIFT 프로젝트 상세 설명 페이지입니다.</p>
-    <button onclick="location.href='/'">홈으로 돌아가기</button>
+    <div class="card">
+        <h1>페이지 2: 프로젝트 정보</h1>
+        <p>AIFT 프로젝트 및 화학 학습 자료실입니다.</p>
+        <hr>
+        
+        <button class="btn btn-drive" onclick="window.open('https://drive.google.com/drive/folders/14c_nOPh6fUWzk1c8teakkXN2b9Ili6Gu')">
+            📂 나의 학습지 자료실 (Google Drive)
+        </button>
+
+        <br>
+        <button class="btn btn-home" onclick="location.href='/'">홈으로 돌아가기</button>
+    </div>
 </body>
 </html>
