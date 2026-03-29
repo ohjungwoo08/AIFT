@@ -2,36 +2,25 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>정우의 AIFT 프로젝트</title>
     <style>
-        body { font-family: 'Arial', sans-serif; text-align: center; padding-top: 50px; background-color: #f4f7f6; }
-        h1 { color: #2c3e50; }
-        p { color: #7f8c8d; }
-        .button-container { margin-top: 30px; }
-        button {
-            padding: 15px 30px;
-            font-size: 18px;
-            cursor: pointer;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            margin: 10px;
-            transition: 0.3s;
+        body { font-family: sans-serif; text-align: center; padding-top: 50px; background-color: #f0f2f5; }
+        .card { background: white; padding: 30px; border-radius: 15px; display: inline-block; shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { color: #1a73e8; }
+        button { 
+            padding: 12px 24px; margin: 10px; font-size: 16px; cursor: pointer;
+            background-color: #1a73e8; color: white; border: none; border-radius: 5px;
         }
-        button:hover { background-color: #2980b9; }
+        button:hover { background-color: #1557b0; }
     </style>
 </head>
 <body>
-
-    <h1>오정우의 AIFT 프로젝트 메인</h1>
-    <p>용산고등학교 과학중점과정 - 화학 데이터 분석 플랫폼</p>
-
-    <div class="button-container">
+    <div class="card">
+        <h1>오정우의 AIFT 메인</h1>
+        <p>용산고등학교 과학중점과정 화학 데이터 플랫폼</p>
+        <hr>
         <button onclick="location.href='/page1'">실험 데이터 확인 (Page 1)</button>
         <button onclick="location.href='/page2'">프로젝트 정보 (Page 2)</button>
     </div>
-
 </body>
 </html>
