@@ -6,52 +6,68 @@
     <title>AIFT - 오정우 연구실</title>
     <style>
         :root {
-            --primary-green: #2ecc71; /* 활기찬 초록색 */
-            --dark-green: #27ae60; /* 어두운 초록색 */
-            --bg-color: #f0fdf4; /* 아주 밝은 초록색 배경 */
-            --text-color: #2c3e50;
+            --bg-start: #2ecc71; /* 밝은 초록 그라데이션 시작 */
+            --bg-end: #a1ffce; /* 연한 연두 그라데이션 끝 */
+            --card-bg: #ffffff;
+            --text-dark: #2c3e50;
+            --green-btn: #27ae60;
+            --light-btn: #e2fbe5;
+            --light-text: #4a5568;
         }
-        
+
         body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+            color: var(--text-dark);
             font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+            margin: 0;
             display: flex;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            margin: 0;
             text-align: center;
         }
 
         .container {
-            background: #ffffff;
-            padding: 60px 40px;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-            max-width: 480px;
-            width: 90%;
-            border: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         h1 {
-            font-size: 36px;
-            font-weight: 800;
+            font-size: 42px;
+            font-weight: 900;
             margin-bottom: 5px;
-            color: var(--dark-green);
+            color: #ffffff;
+            text-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
         p.subtitle {
-            color: #7f8c8d;
-            font-size: 18px;
-            margin-bottom: 50px;
-            font-weight: 400;
+            font-size: 20px;
+            color: #ffffff;
+            margin-bottom: 60px;
+            font-weight: 500;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 50px 30px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid #e0e0e0;
         }
 
         .btn-group {
             display: flex;
             flex-direction: column;
             gap: 20px;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 15px;
+            width: 100%;
         }
 
         button {
@@ -63,30 +79,54 @@
             cursor: pointer;
             transition: all 0.3s ease;
             width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
         /* 메인 학습 자료실 버튼 */
         .btn-materials {
-            background-color: var(--primary-green);
+            background-color: var(--green-btn);
             color: white;
-            box-shadow: 0 4px 10px rgba(46, 204, 113, 0.3);
+            box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3);
+            grid-column: 1 / -1; /* 전체 행 차지 */
         }
 
         .btn-materials:hover {
-            background-color: var(--dark-green);
             transform: translateY(-2px);
             box-shadow: 0 6px 15px rgba(39, 174, 96, 0.4);
         }
 
         /* 서브 페이지 버튼 (데이터, 정보) */
         .btn-sub {
-            background-color: #e2e8f0;
-            color: #4a5568;
+            background-color: var(--light-btn);
+            color: var(--light-text);
         }
 
         .btn-sub:hover {
-            background-color: #cbd5e0;
+            background-color: #c9f3d1;
             transform: translateY(-2px);
+        }
+
+        .warning-box {
+            margin-top: 40px;
+            background-color: #fffaf0;
+            border: 1px solid #ffe0b2;
+            color: #d35400;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: left;
+            display: flex;
+            gap: 10px;
+            align-items: start;
+        }
+
+        .footer {
+            margin-top: 50px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.7);
         }
     </style>
 </head>
@@ -95,14 +135,32 @@
         <h1>오정우 연구실</h1>
         <p class="subtitle">화학 및 기타 학습자료의 손쉬운 만남</p>
         
-        <div class="btn-group">
-            <button class="btn-materials" onclick="location.href='/page2'">
-                📂 화학 및 기타 학습자료 보러가기
-            </button>
-            
-            <button class="btn-sub" onclick="location.href='/page1'">
-                📊 페이지 1 (데이터 분석)
-            </button>
+        <div class="card">
+            <div class="btn-group">
+                <button class="btn-materials" onclick="location.href='/page2'">
+                    📂 화학 및 기타 학습자료 보러가기
+                </button>
+                
+                <div class="btn-row">
+                    <button class="btn-sub" onclick="location.href='/page1'">
+                        📊 페이지 1 (데이터 분석)
+                    </button>
+                    <button class="btn-sub" onclick="location.href='/page2'">
+                        ℹ️ 페이지 2 (정보 확인)
+                    </button>
+                </div>
+            </div>
+
+            <div class="warning-box">
+                <span>⚠️</span>
+                <div>
+                    터미널 오류 시 참고: <code>cat</code> 명령어가 안 먹힐 경우 깃허브에서 직접 파일을 만드세요.
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            https://aift-o2u2.onrender.com/ | Oh Jung-woo's Lab | https://github.com/ohjungwoo08/AIFT
         </div>
     </div>
 </body>
