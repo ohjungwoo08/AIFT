@@ -6,13 +6,13 @@
     <title>AIFT - 오정우 연구실</title>
     <style>
         :root {
-            --bg-start: #2ecc71; /* 밝은 초록 그라데이션 시작 */
-            --bg-end: #a1ffce; /* 연한 연두 그라데이션 끝 */
+            --bg-start: #2ecc71;
+            --bg-end: #a1ffce;
             --card-bg: #ffffff;
             --text-dark: #2c3e50;
             --green-btn: #27ae60;
-            --light-btn: #e2fbe5;
-            --light-text: #4a5568;
+            --light-btn: #f0fdf4;
+            --light-text: #27ae60;
         }
 
         body {
@@ -31,6 +31,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            width: 100%;
         }
 
         h1 {
@@ -44,37 +45,31 @@
         p.subtitle {
             font-size: 20px;
             color: #ffffff;
-            margin-bottom: 60px;
+            margin-bottom: 50px;
             font-weight: 500;
         }
 
         .card {
             background: var(--card-bg);
             padding: 50px 30px;
-            border-radius: 20px;
+            border-radius: 25px;
             box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            max-width: 500px;
-            width: 90%;
-            border: 1px solid #e0e0e0;
+            max-width: 450px;
+            width: 85%;
+            border: 1px solid rgba(255,255,255,0.3);
         }
 
         .btn-group {
             display: flex;
             flex-direction: column;
-            gap: 20px;
-        }
-
-        .btn-row {
-            display: flex;
             gap: 15px;
-            width: 100%;
         }
 
         button {
-            padding: 20px;
+            padding: 22px;
             font-size: 18px;
-            font-weight: 600;
-            border-radius: 12px;
+            font-weight: 700;
+            border-radius: 15px;
             border: none;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -85,48 +80,47 @@
             gap: 10px;
         }
 
-        /* 메인 학습 자료실 버튼 */
+        /* 1. 학습 자료실 (메인 강조 버튼) */
         .btn-materials {
             background-color: var(--green-btn);
             color: white;
-            box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3);
-            grid-column: 1 / -1; /* 전체 행 차지 */
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
         }
 
         .btn-materials:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(39, 174, 96, 0.4);
+            transform: translateY(-3px);
+            background-color: #219150;
+            box-shadow: 0 8px 20px rgba(39, 174, 96, 0.4);
         }
 
-        /* 서브 페이지 버튼 (데이터, 정보) */
+        /* 2. 페이지 1 (데이터 분석 버튼) */
         .btn-sub {
             background-color: var(--light-btn);
             color: var(--light-text);
+            border: 2px solid var(--green-btn);
         }
 
         .btn-sub:hover {
-            background-color: #c9f3d1;
+            background-color: #dcfce7;
             transform: translateY(-2px);
         }
 
         .warning-box {
-            margin-top: 40px;
+            margin-top: 35px;
             background-color: #fffaf0;
             border: 1px solid #ffe0b2;
             color: #d35400;
             padding: 15px;
-            border-radius: 8px;
-            font-size: 14px;
+            border-radius: 10px;
+            font-size: 13px;
             text-align: left;
-            display: flex;
-            gap: 10px;
-            align-items: start;
+            line-height: 1.5;
         }
 
         .footer {
-            margin-top: 50px;
+            margin-top: 40px;
             font-size: 12px;
-            color: rgba(255,255,255,0.7);
+            color: rgba(255,255,255,0.8);
         }
     </style>
 </head>
@@ -141,26 +135,19 @@
                     📂 화학 및 기타 학습자료 보러가기
                 </button>
                 
-                <div class="btn-row">
-                    <button class="btn-sub" onclick="location.href='/page1'">
-                        📊 페이지 1 (데이터 분석)
-                    </button>
-                    <button class="btn-sub" onclick="location.href='/page2'">
-                        ℹ️ 페이지 2 (정보 확인)
-                    </button>
-                </div>
+                <button class="btn-sub" onclick="location.href='/page1'">
+                    📊 실험 데이터 확인 (Page 1)
+                </button>
             </div>
 
             <div class="warning-box">
-                <span>⚠️</span>
-                <div>
-                    터미널 오류 시 참고: <code>cat</code> 명령어가 안 먹힐 경우 깃허브에서 직접 파일을 만드세요.
-                </div>
+                <strong>💡 Tip</strong><br>
+                터미널 오류 시 참고: <code>cat</code> 명령어가 안 먹힐 경우 깃허브에서 직접 파일을 만드세요.
             </div>
         </div>
 
         <div class="footer">
-            https://aift-o2u2.onrender.com/ | Oh Jung-woo's Lab | https://github.com/ohjungwoo08/AIFT
+            https://aift-o2u2.onrender.com/ | Oh Jung-woo's Lab
         </div>
     </div>
 </body>
