@@ -6,130 +6,96 @@
     <title>AIFT - 학습 자료실</title>
     <style>
         :root {
-            --primary-green: #2ecc71; /* 활기찬 초록색 */
-            --dark-green: #27ae60; /* 어두운 초록색 */
-            --bg-color: #f0fdf4; /* 메인과 동일한 밝은 초록색 배경 */
-            --text-color: #2c3e50;
+            --bg-start: #2ecc71;
+            --bg-end: #a1ffce;
+            --btn-chem1: #27ae60; /* 화학1: 진한 초록 */
+            --btn-chem2: #2ecc71; /* 화학2: 밝은 초록 */
+            --text-white: #ffffff;
         }
-        
+
         body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
             font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+            margin: 0;
             display: flex;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            margin: 0;
-            text-align: center;
         }
 
         .container {
             background: #ffffff;
-            padding: 50px 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-            max-width: 550px;
-            width: 95%;
-            border: 1px solid #e0e0e0;
+            padding: 40px 25px;
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            max-width: 450px;
+            width: 90%;
+            text-align: center;
         }
 
-        h1 {
-            font-size: 28px;
-            font-weight: 800;
-            margin-bottom: 5px;
-            color: var(--dark-green);
-        }
+        h1 { color: #2c3e50; font-size: 26px; margin-bottom: 30px; font-weight: 800; }
 
-        p.subtitle {
-            color: #7f8c8d;
-            font-size: 16px;
-            margin-bottom: 40px;
-            font-weight: 400;
-        }
-
-        .materials-group {
+        /* 버튼들이 세로로 하나씩 따로따로 나열되도록 설정 */
+        .button-list {
             display: flex;
             flex-direction: column;
-            gap: 15px; /* 버튼 사이 간격 */
+            gap: 15px; /* 버튼 사이의 간격 */
         }
 
-        /* 공통 버튼 스타일 */
-        .btn-material {
-            padding: 18px;
-            font-size: 16px;
-            font-weight: 600;
-            border-radius: 12px;
-            border: none;
-            cursor: pointer;
+        .action-btn {
+            display: block;
+            padding: 20px;
+            border-radius: 15px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 17px;
             transition: all 0.3s ease;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none; /* 링크 밑줄 제거 */
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-
-        /* 화학1 자료 버튼 스타일 */
-        .btn-chem1 {
-            background-color: var(--primary-green);
-            color: white;
-        }
-
-        .btn-chem1:hover {
-            background-color: var(--dark-green);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(39, 174, 96, 0.4);
-        }
-
-        /* 화학2 자료 버튼 스타일 */
-        .btn-chem2 {
-            background-color: #e2e8f0;
-            color: #4a5568;
-        }
-
-        .btn-chem2:hover {
-            background-color: #cbd5e0;
-            transform: translateY(-2px);
-        }
-
-        /* 홈으로 돌아가기 버튼 */
-        .btn-back {
-            background: none;
-            color: #8e8e93;
             border: none;
-            margin-top: 30px;
             cursor: pointer;
-            text-decoration: underline;
+        }
+
+        /* 화학1 개별 버튼들 */
+        .btn-1 { background-color: var(--btn-chem1); color: var(--text-white); }
+        .btn-1:hover { transform: translateY(-3px); background-color: #219150; box-shadow: 0 6px 12px rgba(0,0,0,0.15); }
+
+        /* 화학2 개별 버튼들 */
+        .btn-2 { background-color: var(--btn-chem2); color: var(--text-white); }
+        .btn-2:hover { transform: translateY(-3px); background-color: #27ae60; box-shadow: 0 6px 12px rgba(0,0,0,0.15); }
+
+        .home-btn {
+            margin-top: 30px;
+            display: inline-block;
+            color: #95a5a6;
+            text-decoration: none;
             font-size: 14px;
+            border-bottom: 1px solid #bdc3c7;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>나의 학습 자료실 (Google Drive)</h1>
-        <p class="subtitle">화학 데이터 분석 및 학습자료 플랫폼</p>
+        <h1>🧪 화학 학습 자료실</h1>
         
-        <div class="materials-group">
-            <a href="https://drive.google.com/drive/folders/1a--rx52q3L2H4iL4b69yaGbdqXI_K7TC" target="_blank" class="btn-material btn-chem1">
-                📚 화학1 EBS 자료 보러가기
+        <div class="button-list">
+            <a href="https://drive.google.com/drive/folders/1a--rx52q3L2H4iL4b69yaGbdqXI_K7TC" target="_blank" class="action-btn btn-1">
+                📗 화학1 EBS 자료 바로가기
             </a>
             
-            <a href="https://drive.google.com/drive/folders/10U4lfZ_mxbUyDigtXhFMbeP5U-Jv385d" target="_blank" class="btn-material btn-chem1">
-                🎓 화학1 수능대비 자료 보러가기
+            <a href="https://drive.google.com/drive/folders/10U4lfZ_mxbUyDigtXhFMbeP5U-Jv385d" target="_blank" class="action-btn btn-1">
+                📘 화학1 수능대비 자료 바로가기
             </a>
 
-            <a href="https://drive.google.com/drive/folders/1OvYdllIorBkwV4lCGY4MZWSXKHouSbsB" target="_blank" class="btn-material btn-chem2">
-                📖 화학2 수능대비 자료 보러가기
+            <a href="https://drive.google.com/drive/folders/1OvYdllIorBkwV4lCGY4MZWSXKHouSbsB" target="_blank" class="action-btn btn-2">
+                📙 화학2 수능대비 자료 바로가기
             </a>
 
-            <a href="https://drive.google.com/drive/folders/1u08aj2CB53WkjWv_uAaBcBoFh4RViGE8" target="_blank" class="btn-material btn-chem2">
-                📝 화학2 내신대비 자료 보러가기
+            <a href="https://drive.google.com/drive/folders/1u08aj2CB53WkjWv_uAaBcBoFh4RViGE8" target="_blank" class="action-btn btn-2">
+                📒 화학2 내신대비 자료 바로가기
             </a>
         </div>
 
-        <button class="btn-back" onclick="location.href='/'">← 메인으로 돌아가기</button>
+        <a href="/" class="home-btn">메인 연구실로 돌아가기</a>
     </div>
 </body>
 </html>
