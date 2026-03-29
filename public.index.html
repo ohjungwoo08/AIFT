@@ -2,25 +2,108 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>정우의 AIFT 프로젝트</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIFT - 오정우 연구실</title>
     <style>
-        body { font-family: sans-serif; text-align: center; padding-top: 50px; background-color: #f0f2f5; }
-        .card { background: white; padding: 30px; border-radius: 15px; display: inline-block; shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h1 { color: #1a73e8; }
-        button { 
-            padding: 12px 24px; margin: 10px; font-size: 16px; cursor: pointer;
-            background-color: #1a73e8; color: white; border: none; border-radius: 5px;
+        :root {
+            --primary-green: #2ecc71; /* 활기찬 초록색 */
+            --dark-green: #27ae60; /* 어두운 초록색 */
+            --bg-color: #f0fdf4; /* 아주 밝은 초록색 배경 */
+            --text-color: #2c3e50;
         }
-        button:hover { background-color: #1557b0; }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+
+        .container {
+            background: #ffffff;
+            padding: 60px 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            max-width: 480px;
+            width: 90%;
+            border: 1px solid #e0e0e0;
+        }
+
+        h1 {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 5px;
+            color: var(--dark-green);
+        }
+
+        p.subtitle {
+            color: #7f8c8d;
+            font-size: 18px;
+            margin-bottom: 50px;
+            font-weight: 400;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        button {
+            padding: 20px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        /* 메인 학습 자료실 버튼 */
+        .btn-materials {
+            background-color: var(--primary-green);
+            color: white;
+            box-shadow: 0 4px 10px rgba(46, 204, 113, 0.3);
+        }
+
+        .btn-materials:hover {
+            background-color: var(--dark-green);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(39, 174, 96, 0.4);
+        }
+
+        /* 서브 페이지 버튼 (데이터, 정보) */
+        .btn-sub {
+            background-color: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-sub:hover {
+            background-color: #cbd5e0;
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1>오정우의 AIFT 메인</h1>
-        <p>용산고등학교 과학중점과정 화학 데이터 플랫폼</p>
-        <hr>
-        <button onclick="location.href='/page1'">실험 데이터 확인 (Page 1)</button>
-        <button onclick="location.href='/page2'">프로젝트 정보 (Page 2)</button>
+    <div class="container">
+        <h1>오정우 연구실</h1>
+        <p class="subtitle">화학 및 기타 학습자료의 손쉬운 만남</p>
+        
+        <div class="btn-group">
+            <button class="btn-materials" onclick="location.href='/page2'">
+                📂 화학 및 기타 학습자료 보러가기
+            </button>
+            
+            <button class="btn-sub" onclick="location.href='/page1'">
+                📊 페이지 1 (데이터 분석)
+            </button>
+        </div>
     </div>
 </body>
 </html>
