@@ -3,32 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Page 2 - 프로젝트 정보</title>
+    <title>AIFT - 학습 자료실</title>
     <style>
-        body { font-family: sans-serif; text-align: center; padding-top: 50px; background-color: #f0f2f5; }
-        .card { background: white; padding: 30px; border-radius: 15px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h1 { color: #1a73e8; }
-        .btn { 
-            padding: 12px 24px; margin: 10px; font-size: 16px; cursor: pointer;
-            border: none; border-radius: 5px; color: white; transition: 0.3s;
+        :root {
+            --primary-green: #2ecc71; /* 활기찬 초록색 */
+            --dark-green: #27ae60; /* 어두운 초록색 */
+            --bg-color: #f0fdf4; /* 메인과 동일한 밝은 초록색 배경 */
+            --text-color: #2c3e50;
         }
-        .btn:hover { opacity: 0.8; }
-        .btn-home { background-color: #5f6368; }
-        .btn-drive { background-color: #34a853; } /* 구글 드라이브 느낌의 초록색 */
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+
+        .container {
+            background: #ffffff;
+            padding: 50px 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            max-width: 550px;
+            width: 95%;
+            border: 1px solid #e0e0e0;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 5px;
+            color: var(--dark-green);
+        }
+
+        p.subtitle {
+            color: #7f8c8d;
+            font-size: 16px;
+            margin-bottom: 40px;
+            font-weight: 400;
+        }
+
+        .materials-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px; /* 버튼 사이 간격 */
+        }
+
+        /* 공통 버튼 스타일 */
+        .btn-material {
+            padding: 18px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none; /* 링크 밑줄 제거 */
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        /* 화학1 자료 버튼 스타일 */
+        .btn-chem1 {
+            background-color: var(--primary-green);
+            color: white;
+        }
+
+        .btn-chem1:hover {
+            background-color: var(--dark-green);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(39, 174, 96, 0.4);
+        }
+
+        /* 화학2 자료 버튼 스타일 */
+        .btn-chem2 {
+            background-color: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-chem2:hover {
+            background-color: #cbd5e0;
+            transform: translateY(-2px);
+        }
+
+        /* 홈으로 돌아가기 버튼 */
+        .btn-back {
+            background: none;
+            color: #8e8e93;
+            border: none;
+            margin-top: 30px;
+            cursor: pointer;
+            text-decoration: underline;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1>페이지 2: 프로젝트 정보</h1>
-        <p>AIFT 프로젝트 및 화학 학습 자료실입니다.</p>
-        <hr>
+    <div class="container">
+        <h1>나의 학습 자료실 (Google Drive)</h1>
+        <p class="subtitle">화학 데이터 분석 및 학습자료 플랫폼</p>
         
-        <button class="btn btn-drive" onclick="window.open('https://drive.google.com/drive/folders/14c_nOPh6fUWzk1c8teakkXN2b9Ili6Gu')">
-            📂 나의 학습지 자료실 (Google Drive)
-        </button>
+        <div class="materials-group">
+            <a href="https://drive.google.com/drive/folders/1a--rx52q3L2H4iL4b69yaGbdqXI_K7TC" target="_blank" class="btn-material btn-chem1">
+                📚 화학1 EBS 자료 보러가기
+            </a>
+            
+            <a href="https://drive.google.com/drive/folders/10U4lfZ_mxbUyDigtXhFMbeP5U-Jv385d" target="_blank" class="btn-material btn-chem1">
+                🎓 화학1 수능대비 자료 보러가기
+            </a>
 
-        <br>
-        <button class="btn btn-home" onclick="location.href='/'">홈으로 돌아가기</button>
+            <a href="https://drive.google.com/drive/folders/1OvYdllIorBkwV4lCGY4MZWSXKHouSbsB" target="_blank" class="btn-material btn-chem2">
+                📖 화학2 수능대비 자료 보러가기
+            </a>
+
+            <a href="https://drive.google.com/drive/folders/1u08aj2CB53WkjWv_uAaBcBoFh4RViGE8" target="_blank" class="btn-material btn-chem2">
+                📝 화학2 내신대비 자료 보러가기
+            </a>
+        </div>
+
+        <button class="btn-back" onclick="location.href='/'">← 메인으로 돌아가기</button>
     </div>
 </body>
 </html>
