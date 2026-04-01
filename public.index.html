@@ -16,7 +16,9 @@
         }
 
         body {
+            /* 1. 기본 초록 그라데이션 배경 */
             background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+            position: relative; /* 배경 일러스트를 위한 위치 설정 */
             color: var(--text-dark);
             font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
             margin: 0;
@@ -25,6 +27,21 @@
             justify-content: center;
             min-height: 100vh;
             text-align: center;
+            overflow-x: hidden; /* 배경이 튀어나오지 않게 함 */
+        }
+
+        /* 2. 흐릿한 화학 일러스트 배경 패턴 추가 */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            /* 연하고 흐릿한 화학 패턴 이미지 (투명도 조절된 PNG 사용) */
+            background-image: url('https://img.freepik.com/premium-vector/seamless-pattern-with-chemical-elements-and-laboratory-equipment-vector-flat-illustration-isolated-on-white-background_151139-242.jpg?w=1480');
+            background-repeat: repeat;
+            background-size: 300px; /* 패턴 크기 조절 */
+            opacity: 0.08; /* 아주 연하게 (흐릿하게) 설정 */
+            filter: blur(1px); /* 살짝 더 블러 처리 */
+            z-index: -1; /* 다른 요소 뒤로 배치 */
         }
 
         .container {
@@ -32,6 +49,8 @@
             flex-direction: column;
             align-items: center;
             width: 100%;
+            position: relative; /* 패턴 위에 오도록 설정 */
+            z-index: 1;
         }
 
         h1 {
@@ -102,7 +121,6 @@
             transform: translateY(-2px);
         }
 
-        /* 문구 수정된 하단 박스 */
         .info-box {
             margin-top: 35px;
             background-color: #f0fdf4;
