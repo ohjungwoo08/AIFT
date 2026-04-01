@@ -2,91 +2,72 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>오정우 연구실 - 질문 게시판</title>
+    <title>질문 게시판 - 오정우 연구실</title>
     <style>
-        :root { --main-green: #27ae60; --bg-start: #2ecc71; --bg-end: #a1ffce; }
+        body { background: #f0fdf4; font-family: sans-serif; display: flex; justify-content: center; padding: 40px 0; }
+        .container { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 550px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+        h2 { color: #27ae60; text-align: center; margin-bottom: 30px; }
         
-        body { 
-            background: linear-gradient(135deg, var(--bg-start), var(--bg-end)); 
-            margin: 0; font-family: 'Malgun Gothic', sans-serif; 
-            display: flex; justify-content: center; align-items: center; 
-            min-height: 100vh; position: relative; overflow-x: hidden;
-        }
-
-        /* 배경 화학 일러스트 (흐릿하게) */
-        body::before {
-            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-image: url('https://img.freepik.com/premium-vector/seamless-pattern-with-chemical-elements-and-laboratory-equipment-vector-flat-illustration-isolated-on-white-background_151139-242.jpg?w=1480');
-            background-repeat: repeat; background-size: 300px; 
-            opacity: 0.08; filter: blur(1px); z-index: -1;
-        }
-
-        .container { 
-            background: white; padding: 40px; border-radius: 25px; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
-            width: 90%; max-width: 550px; z-index: 1; text-align: center;
-        }
-
-        h1 { color: var(--main-green); margin-bottom: 30px; font-weight: 800; }
-
-        /* 글쓰기 양식 */
-        form { display: flex; flex-direction: column; gap: 12px; margin-bottom: 40px; }
-        input, textarea { 
-            padding: 15px; border: 1px solid #ddd; border-radius: 12px; 
-            font-size: 16px; outline: none; transition: 0.3s;
-        }
-        input:focus, textarea:focus { border-color: var(--main-green); box-shadow: 0 0 8px rgba(39, 174, 96, 0.2); }
-        
-        button { 
-            background: var(--main-green); color: white; padding: 15px; 
-            border: none; border-radius: 12px; font-weight: bold; 
-            cursor: pointer; transition: 0.3s; font-size: 16px;
-        }
-        button:hover { background: #219150; transform: translateY(-2px); }
+        form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 40px; background: #fafafa; padding: 20px; border-radius: 15px; }
+        input, textarea { padding: 12px; border: 1px solid #ddd; border-radius: 8px; }
+        button { background: #27ae60; color: white; padding: 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
         /* 게시글 목록 스타일 */
-        .post-list-container { text-align: left; border-top: 2px solid #f0fdf4; pt: 20px; }
-        .post-item { border-bottom: 1px solid #eee; padding: 20px 0; }
-        .post-item h3 { margin: 0 0 8px 0; color: #333; font-size: 18px; }
-        .post-item p { margin: 0 0 10px 0; color: #555; line-height: 1.6; }
-        
-        .post-info { font-size: 13px; color: #999; display: flex; align-items: center; gap: 10px; }
-        .author-tag { color: var(--main-green); font-weight: bold; }
-
-        .nav-links { margin-top: 30px; display: flex; justify-content: center; gap: 20px; }
-        .nav-links a { color: #888; text-decoration: none; font-size: 14px; border-bottom: 1px solid #ddd; }
+        #post-list { border-top: 2px solid #eee; padding-top: 20px; text-align: left; }
+        .post-item { border-bottom: 1px solid #f0f0f0; padding: 15px 0; }
+        .post-item:last-child { border: none; }
+        .post-title { font-size: 17px; font-weight: bold; color: #333; margin-bottom: 5px; }
+        .post-content { color: #666; font-size: 14px; line-height: 1.5; margin-bottom: 10px; white-space: pre-wrap; }
+        .post-info { font-size: 12px; color: #aaa; display: flex; justify-content: space-between; }
+        .author-tag { color: #27ae60; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>💬 질문 게시판</h1>
+        <h2>💬 멘토링 및 질문 게시판</h2>
         
         <form action="/api/posts" method="POST">
-            <input type="text" name="title" placeholder="질문 제목 (예: 화학2 평형 질문)" required>
-            <textarea name="content" rows="4" placeholder="내용을 입력하세요. 로그인이 필요합니다." required></textarea>
-            <button type="submit">질문 등록하기</button>
+            <input type="text" name="title" placeholder="질문 제목" required>
+            <textarea name="content" rows="4" placeholder="궁금한 내용을 적어주세요 (로그인 필요)" required></textarea>
+            <button type="submit">질문 등록</button>
         </form>
 
-        <div class="post-list-container" id="posts">
-            <p style="text-align:center; color:#ccc;">질문을 불러오는 중...</p>
+        <div id="post-list">
+            <p style="text-align:center; color:#ccc;">게시글을 불러오는 중...</p>
         </div>
 
-        <div class="nav-links">
-            <a href="/">🏠 메인으로</a>
-            <a href="/api/logout" style="color: #e74c3c; border-color: #fab1a0;">로그아웃</a>
+        <div style="text-align:center; margin-top:30px;">
+            <a href="/" style="color:#bbb; text-decoration:none; font-size:13px;">🏠 메인으로 돌아가기</a>
         </div>
     </div>
 
     <script>
-        // 페이지 로드 시 실행: 서버에서 게시글 목록을 가져옴
-        async function fetchPosts() {
+        async function loadPosts() {
             try {
                 const res = await fetch('/api/posts');
-                const data = await res.json();
-                const postsDiv = document.getElementById('posts');
-
-                if (data.length === 0) {
-                    postsDiv.innerHTML = '<p style="text-align:center; color:#999; padding: 20px;">아직 올라온 질문이 없습니다. 첫 질문을 남겨보세요!</p>';
+                const posts = await res.json();
+                const list = document.getElementById('post-list');
+                
+                if (posts.length === 0) {
+                    list.innerHTML = '<p style="text-align:center; color:#ccc; padding:20px;">아직 질문이 없습니다.</p>';
                     return;
                 }
+
+                list.innerHTML = posts.map(p => `
+                    <div class="post-item">
+                        <div class="post-title">${p.title}</div>
+                        <div class="post-content">${p.content}</div>
+                        <div class="post-info">
+                            <span>👤 작성자: <span class="author-tag">${p.author_name}</span></span>
+                            <span>📅 ${new Date(p.created_at).toLocaleString()}</span>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                document.getElementById('post-list').innerHTML = '<p style="color:red; text-align:center;">서버 연결 오류</p>';
+            }
+        }
+        loadPosts(); // 실행
+    </script>
+</body>
+</html>
