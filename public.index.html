@@ -51,7 +51,7 @@
 
         .card {
             background: var(--card-bg);
-            padding: 55px 35px; /* 내부 여백을 조금 더 넓혀서 버튼이 돋보이게 함 */
+            padding: 55px 35px;
             border-radius: 25px;
             box-shadow: 0 15px 35px rgba(0,0,0,0.1);
             max-width: 450px;
@@ -62,11 +62,11 @@
         .btn-group {
             display: flex;
             flex-direction: column;
-            gap: 20px; /* 버튼 사이 간격을 더 둠 */
+            gap: 20px;
         }
 
         button {
-            padding: 25px; /* 버튼 크기를 조금 더 키움 */
+            padding: 25px;
             font-size: 19px;
             font-weight: 700;
             border-radius: 15px;
@@ -79,7 +79,6 @@
             justify-content: center;
         }
 
-        /* 1. 화학 및 기타 학습자료 (메인 강조) */
         .btn-materials {
             background-color: var(--green-btn);
             color: white;
@@ -92,7 +91,6 @@
             box-shadow: 0 8px 20px rgba(39, 174, 96, 0.4);
         }
 
-        /* 2. 질문 게시판 (보조 스타일) */
         .btn-qna {
             background-color: var(--light-btn);
             color: var(--light-text);
@@ -104,16 +102,18 @@
             transform: translateY(-2px);
         }
 
-        .warning-box {
+        /* 문구 수정된 하단 박스 */
+        .info-box {
             margin-top: 35px;
-            background-color: #fffaf0;
-            border: 1px solid #ffe0b2;
-            color: #d35400;
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 13px;
-            text-align: left;
-            line-height: 1.5;
+            background-color: #f0fdf4;
+            border: 1px solid #dcfce7;
+            color: #27ae60;
+            padding: 18px;
+            border-radius: 12px;
+            font-size: 14px;
+            text-align: center;
+            line-height: 1.6;
+            word-break: keep-all;
         }
 
         .footer {
@@ -139,9 +139,8 @@
                 </button>
             </div>
 
-            <div class="warning-box">
-                <strong>💡 Tip</strong><br>
-                터미널 오류 시 참고: <code>cat</code> 명령어가 안 먹힐 경우 깃허브에서 직접 파일을 만드세요.
+            <div class="info-box">
+                모르는 것은 언제나 질문하고 양질의 교육 자료가 넘쳐나는 곳, <strong>오정우 연구실</strong>
             </div>
         </div>
 
