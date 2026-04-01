@@ -2,167 +2,22 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AIFT - 오정우 연구실</title>
     <style>
-        :root {
-            --bg-start: #2ecc71;
-            --bg-end: #a1ffce;
-            --card-bg: #ffffff;
-            --text-dark: #2c3e50;
-            --green-btn: #27ae60;
-            --light-btn: #f0fdf4;
-            --light-text: #27ae60;
-        }
-
-        body {
-            background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
-            position: relative;
-            color: var(--text-dark);
-            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            text-align: center;
-            overflow-x: hidden;
-        }
-
-        /* 배경 화학 일러스트 패턴 */
-        body::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-image: url('https://img.freepik.com/premium-vector/seamless-pattern-with-chemical-elements-and-laboratory-equipment-vector-flat-illustration-isolated-on-white-background_151139-242.jpg?w=1480');
-            background-repeat: repeat;
-            background-size: 300px;
-            opacity: 0.08;
-            filter: blur(1px);
-            z-index: -1;
-        }
-
-        .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            position: relative;
-            z-index: 1;
-        }
-
-        h1 {
-            font-size: 42px;
-            font-weight: 900;
-            margin-bottom: 5px;
-            color: #ffffff;
-            text-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        p.subtitle {
-            font-size: 20px;
-            color: #ffffff;
-            margin-bottom: 50px;
-            font-weight: 500;
-        }
-
-        .card {
-            background: var(--card-bg);
-            padding: 55px 35px;
-            border-radius: 25px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            max-width: 450px;
-            width: 85%;
-            border: 1px solid rgba(255,255,255,0.3);
-        }
-
-        .btn-group {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        button {
-            padding: 25px;
-            font-size: 19px;
-            font-weight: 700;
-            border-radius: 15px;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .btn-materials {
-            background-color: var(--green-btn);
-            color: white;
-            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
-        }
-
-        .btn-materials:hover {
-            transform: translateY(-3px);
-            background-color: #219150;
-            box-shadow: 0 8px 20px rgba(39, 174, 96, 0.4);
-        }
-
-        .btn-qna {
-            background-color: var(--light-btn);
-            color: var(--light-text);
-            border: 2px solid var(--green-btn);
-        }
-
-        .btn-qna:hover {
-            background-color: #dcfce7;
-            transform: translateY(-2px);
-        }
-
-        .info-box {
-            margin-top: 35px;
-            background-color: #f0fdf4;
-            border: 1px solid #dcfce7;
-            color: #27ae60;
-            padding: 18px;
-            border-radius: 12px;
-            font-size: 14px;
-            text-align: center;
-            line-height: 1.6;
-            word-break: keep-all;
-        }
-
-        .footer {
-            margin-top: 40px;
-            font-size: 12px;
-            color: rgba(255,255,255,0.8);
-        }
+        body { background: linear-gradient(135deg, #2ecc71, #a1ffce); font-family: sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+        .card { background: white; padding: 50px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 350px; text-align: center; }
+        .btn { display: block; width: 100%; padding: 15px; margin: 10px 0; font-weight: bold; border-radius: 12px; border: none; cursor: pointer; text-decoration: none; font-size: 16px; transition: 0.3s; }
+        .btn-1 { background: #27ae60; color: white; }
+        .btn-2 { background: #f0fdf4; color: #27ae60; border: 2px solid #27ae60; }
+        .btn:hover { transform: translateY(-3px); opacity: 0.9; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>오정우 연구실</h1>
-        <p class="subtitle">화학 및 기타 학습자료의 손쉬운 만남</p>
-        
-        <div class="card">
-            <div class="btn-group">
-                <button class="btn-materials" onclick="location.href='/page2'">
-                    📂 화학 및 기타 학습자료 보러가기
-                </button>
-                
-                <button class="btn-qna" onclick="location.href='/page1'">
-                    💬 질문 게시판 바로가기
-                </button>
-            </div>
-
-            <div class="info-box">
-                모르는 것은 언제나 질문하고 양질의 교육 자료가 넘쳐나는 곳, <strong>오정우 연구실</strong>
-            </div>
-        </div>
-
-        <div class="footer">
-            https://aift-o2u2.onrender.com/ | Oh Jung-woo's Lab
-        </div>
+    <div class="card">
+        <h1 style="color:#27ae60; margin-bottom: 30px;">오정우 연구실</h1>
+        <a href="/page2" class="btn btn-1">📂 학습 자료실</a>
+        <a href="/page1" class="btn btn-2">💬 질문 게시판</a>
+        <a href="/login" style="color:#888; font-size:13px; text-decoration: none; margin-top: 15px; display: inline-block;">🔑 로그인 / 회원가입</a>
     </div>
 </body>
 </html>
