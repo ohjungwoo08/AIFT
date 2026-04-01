@@ -51,7 +51,7 @@
 
         .card {
             background: var(--card-bg);
-            padding: 50px 30px;
+            padding: 55px 35px; /* 내부 여백을 조금 더 넓혀서 버튼이 돋보이게 함 */
             border-radius: 25px;
             box-shadow: 0 15px 35px rgba(0,0,0,0.1);
             max-width: 450px;
@@ -62,12 +62,12 @@
         .btn-group {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 20px; /* 버튼 사이 간격을 더 둠 */
         }
 
         button {
-            padding: 22px;
-            font-size: 18px;
+            padding: 25px; /* 버튼 크기를 조금 더 키움 */
+            font-size: 19px;
             font-weight: 700;
             border-radius: 15px;
             border: none;
@@ -79,7 +79,7 @@
             justify-content: center;
         }
 
-        /* 1. 학습 자료실 (메인 강조 버튼) */
+        /* 1. 화학 및 기타 학습자료 (메인 강조) */
         .btn-materials {
             background-color: var(--green-btn);
             color: white;
@@ -92,14 +92,14 @@
             box-shadow: 0 8px 20px rgba(39, 174, 96, 0.4);
         }
 
-        /* 2. 페이지 1 (데이터 분석 버튼) */
-        .btn-sub {
+        /* 2. 질문 게시판 (보조 스타일) */
+        .btn-qna {
             background-color: var(--light-btn);
             color: var(--light-text);
             border: 2px solid var(--green-btn);
         }
 
-        .btn-sub:hover {
+        .btn-qna:hover {
             background-color: #dcfce7;
             transform: translateY(-2px);
         }
@@ -134,8 +134,8 @@
                     📂 화학 및 기타 학습자료 보러가기
                 </button>
                 
-                <button class="btn-sub" onclick="location.href='/page1'">
-                    📊 실험 데이터 확인 (Page 1)
+                <button class="btn-qna" onclick="alert('질문 게시판 서비스 준비 중입니다!')">
+                    💬 질문 게시판 바로가기
                 </button>
             </div>
 
