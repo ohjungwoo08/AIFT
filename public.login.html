@@ -1,1 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>연구실 인증센터 - 로그인</title>
+    <style>
+        :root { --main: #27ae60; --bg: #f0fdf4; }
+        body { 
+            background: linear-gradient(135deg, #2ecc71, #a1ffce);
+            font-family: 'Malgun Gothic', sans-serif;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; margin: 0;
+        }
+        .card { 
+            background: white; padding: 40px; border-radius: 25px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 350px; 
+            text-align: center;
+        }
+        h2 { color: var(--main); margin-bottom: 25px; font-weight: 800; }
+        input { 
+            width: 100%; padding: 14px; margin: 8px 0; 
+            border: 1px solid #ddd; border-radius: 12px; 
+            box-sizing: border-box; font-size: 15px;
+        }
+        button { 
+            width: 100%; padding: 14px; background: var(--main); 
+            color: white; border: none; border-radius: 12px; 
+            font-weight: bold; cursor: pointer; margin-top: 15px;
+            transition: 0.3s;
+        }
+        button:hover { background: #219150; transform: translateY(-2px); }
+        .toggle { 
+            margin-top: 20px; font-size: 14px; color: #888; 
+            text-decoration: underline; cursor: pointer; 
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div id="login-section">
+            <h2>🔐 연구실 로그인</h2>
+            <form action="/api/login" method="POST">
+                <input type="text" name="username" placeholder="아이디" required>
+                <input type="password" name="password" placeholder="비밀번호" required>
+                <button type="submit">로그인하기</button>
+            </form>
+            <p class="toggle" onclick="toggleView()">계정이 없으신가요? 회원가입</p>
+        </div>
 
+        <div id="register-section" style="display: none;">
+            <h2>🌱 연구원 등록</h2>
+            <form action="/api/register" method="POST">
+                <input type="text" name="username" placeholder="아이디 정하기" required>
+                <input type="password" name="password" placeholder="비밀번호 정하기" required>
+                <input type="text" name="nickname" placeholder="표시될 이름 (실명 권장)" required>
+                <button type="submit" style="background: #2ecc71;">가입 완료</button>
+            </form>
+            <p class="toggle" onclick="toggleView()">이미 계정이 있나요? 로그인</p>
+        </div>
+    </div>
+
+    <script>
+        function toggleView() {
+            const login = document.getElementById('login-section');
+            const reg = document.getElementById('register-section');
+            if(login.style.display === 'none') {
+                login.style.display = 'block'; reg.style.display = 'none';
+            } else {
+                login.style.display = 'none'; reg.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
