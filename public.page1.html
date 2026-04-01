@@ -2,45 +2,91 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>오정우 연구실 - 질문 게시판</title>
     <style>
         :root { --main-green: #27ae60; --bg-start: #2ecc71; --bg-end: #a1ffce; }
-        body { background: linear-gradient(135deg, var(--bg-start), var(--bg-end)); margin: 0; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; position: relative; overflow-x: hidden; }
-        body::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: url('https://img.freepik.com/premium-vector/seamless-pattern-with-chemical-elements-and-laboratory-equipment-vector-flat-illustration-isolated-on-white-background_151139-242.jpg?w=1480'); background-repeat: repeat; background-size: 300px; opacity: 0.08; filter: blur(1px); z-index: -1; }
-        .container { background: white; padding: 40px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 90%; max-width: 500px; z-index: 1; }
-        h1 { color: var(--main-green); text-align: center; }
-        form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px; }
-        input, textarea { padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; }
-        button { background: var(--main-green); color: white; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
-        .post { border-bottom: 1px solid #eee; padding: 15px 0; }
-        .back-link { display: block; text-align: center; margin-top: 20px; color: #888; text-decoration: none; }
+        
+        body { 
+            background: linear-gradient(135deg, var(--bg-start), var(--bg-end)); 
+            margin: 0; font-family: 'Malgun Gothic', sans-serif; 
+            display: flex; justify-content: center; align-items: center; 
+            min-height: 100vh; position: relative; overflow-x: hidden;
+        }
+
+        /* 배경 화학 일러스트 (흐릿하게) */
+        body::before {
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('https://img.freepik.com/premium-vector/seamless-pattern-with-chemical-elements-and-laboratory-equipment-vector-flat-illustration-isolated-on-white-background_151139-242.jpg?w=1480');
+            background-repeat: repeat; background-size: 300px; 
+            opacity: 0.08; filter: blur(1px); z-index: -1;
+        }
+
+        .container { 
+            background: white; padding: 40px; border-radius: 25px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
+            width: 90%; max-width: 550px; z-index: 1; text-align: center;
+        }
+
+        h1 { color: var(--main-green); margin-bottom: 30px; font-weight: 800; }
+
+        /* 글쓰기 양식 */
+        form { display: flex; flex-direction: column; gap: 12px; margin-bottom: 40px; }
+        input, textarea { 
+            padding: 15px; border: 1px solid #ddd; border-radius: 12px; 
+            font-size: 16px; outline: none; transition: 0.3s;
+        }
+        input:focus, textarea:focus { border-color: var(--main-green); box-shadow: 0 0 8px rgba(39, 174, 96, 0.2); }
+        
+        button { 
+            background: var(--main-green); color: white; padding: 15px; 
+            border: none; border-radius: 12px; font-weight: bold; 
+            cursor: pointer; transition: 0.3s; font-size: 16px;
+        }
+        button:hover { background: #219150; transform: translateY(-2px); }
+
+        /* 게시글 목록 스타일 */
+        .post-list-container { text-align: left; border-top: 2px solid #f0fdf4; pt: 20px; }
+        .post-item { border-bottom: 1px solid #eee; padding: 20px 0; }
+        .post-item h3 { margin: 0 0 8px 0; color: #333; font-size: 18px; }
+        .post-item p { margin: 0 0 10px 0; color: #555; line-height: 1.6; }
+        
+        .post-info { font-size: 13px; color: #999; display: flex; align-items: center; gap: 10px; }
+        .author-tag { color: var(--main-green); font-weight: bold; }
+
+        .nav-links { margin-top: 30px; display: flex; justify-content: center; gap: 20px; }
+        .nav-links a { color: #888; text-decoration: none; font-size: 14px; border-bottom: 1px solid #ddd; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>💬 질문 게시판</h1>
+        
         <form action="/api/posts" method="POST">
-            <input type="text" name="title" placeholder="제목을 입력하세요" required>
-            <textarea name="content" rows="3" placeholder="내용을 입력하세요" required></textarea>
+            <input type="text" name="title" placeholder="질문 제목 (예: 화학2 평형 질문)" required>
+            <textarea name="content" rows="4" placeholder="내용을 입력하세요. 로그인이 필요합니다." required></textarea>
             <button type="submit">질문 등록하기</button>
         </form>
-        <div id="posts"></div>
-        <a href="/" class="back-link">← 메인 연구실로 가기</a>
+
+        <div class="post-list-container" id="posts">
+            <p style="text-align:center; color:#ccc;">질문을 불러오는 중...</p>
+        </div>
+
+        <div class="nav-links">
+            <a href="/">🏠 메인으로</a>
+            <a href="/api/logout" style="color: #e74c3c; border-color: #fab1a0;">로그아웃</a>
+        </div>
     </div>
 
     <script>
-        async function loadPosts() {
-            const res = await fetch('/api/posts');
-            const posts = await res.json();
-            document.getElementById('posts').innerHTML = posts.map(p => `
-                <div class="post">
-                    <h3 style="margin:0; color:#333;">${p.title}</h3>
-                    <p style="margin:5px 0; color:#666;">${p.content}</p>
-                    <small style="color:#ccc;">${new Date(p.created_at).toLocaleString()}</small>
-                </div>
-            `).join('');
-        }
-        loadPosts();
-    </script>
-</body>
-</html>
+        // 페이지 로드 시 실행: 서버에서 게시글 목록을 가져옴
+        async function fetchPosts() {
+            try {
+                const res = await fetch('/api/posts');
+                const data = await res.json();
+                const postsDiv = document.getElementById('posts');
+
+                if (data.length === 0) {
+                    postsDiv.innerHTML = '<p style="text-align:center; color:#999; padding: 20px;">아직 올라온 질문이 없습니다. 첫 질문을 남겨보세요!</p>';
+                    return;
+                }
