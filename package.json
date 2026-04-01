@@ -1,7 +1,6 @@
 {
   "name": "aift-project",
   "version": "1.0.0",
-  "description": "오정우 연구실 - 질문 게시판 및 학습 자료실",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
