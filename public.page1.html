@@ -4,62 +4,73 @@
     <meta charset="UTF-8">
     <title>질문 게시판 - 오정우 연구실</title>
     <style>
-        body { background: #f0fdf4; font-family: sans-serif; display: flex; justify-content: center; padding: 40px 0; }
+        body { background: #f0fdf4; font-family: sans-serif; display: flex; justify-content: center; padding: 40px 0; margin: 0; }
         .container { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 550px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
         h2 { color: #27ae60; text-align: center; margin-bottom: 25px; }
         form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px; background: #fafafa; padding: 20px; border-radius: 15px; }
         input, textarea { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
-        button { background: #27ae60; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        button:hover { background: #219150; }
+        button.submit-btn { background: #27ae60; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
         
         #post-list { border-top: 2px solid #eee; padding-top: 20px; }
-        .post-item { border-bottom: 1px solid #f0f0f0; padding: 15px 0; position: relative; }
-        .post-title { font-weight: bold; color: #333; margin-bottom: 5px; font-size: 17px; }
+        .post-item { border-bottom: 1px solid #f0f0f0; padding: 15px 0; }
+        .post-title { font-weight: bold; color: #333; font-size: 17px; margin-bottom: 5px; }
         .post-content { color: #666; font-size: 14px; white-space: pre-wrap; margin-bottom: 10px; line-height: 1.5; }
         .post-info { font-size: 12px; color: #aaa; display: flex; justify-content: space-between; align-items: center; }
-        .author-tag { color: #27ae60; font-weight: bold; }
-        .del-btn { background: #ff7675; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; margin-right: 10px; }
-        .del-btn:hover { background: #d63031; }
+        .del-btn { background: #ff7675; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>💬 멘토링 및 질문 게시판</h2>
-        
         <form action="/api/posts" method="POST">
-            <input type="text" name="title" placeholder="제목을 입력하세요" required>
-            <textarea name="content" rows="3" placeholder="질문 내용을 입력하세요 (로그인 필수)" required></textarea>
-            <button type="submit">질문 등록하기</button>
+            <input type="text" name="title" placeholder="제목" required>
+            <textarea name="content" rows="3" placeholder="내용을 입력하세요" required></textarea>
+            <button type="submit" class="submit-btn">질문 등록</button>
         </form>
-
         <div id="post-list">
             <p style="text-align:center; color:#ccc;">게시글을 불러오는 중...</p>
         </div>
-
-        <div style="text-align:center; margin-top:30px;">
-            <a href="/" style="color:#bbb; text-decoration:none; font-size:13px;">🏠 메인 화면으로 돌아가기</a>
-        </div>
+        <div style="text-align:center; margin-top:30px;"><a href="/" style="color:#bbb; text-decoration:none; font-size:13px;">🏠 메인으로 돌아가기</a></div>
     </div>
 
     <script>
-        // 삭제 기능 함수
         async function deletePost(id) {
-            if (!confirm("정말 이 게시글을 삭제하시겠습니까?")) return;
-            try {
-                const res = await fetch(`/api/posts/${id}`, { method: 'DELETE' });
-                if (res.ok) {
-                    alert("삭제되었습니다.");
-                    loadPosts(); // 목록 새로고침
-                } else {
-                    const msg = await res.text();
-                    alert(msg || "삭제 권한이 없습니다.");
-                }
-            } catch (e) {
-                alert("삭제 중 오류가 발생했습니다.");
-            }
+            if (!confirm("삭제하시겠습니까?")) return;
+            const res = await fetch(`/api/posts/${id}`, { method: 'DELETE' });
+            if (res.ok) loadPosts();
+            else alert("삭제 권한이 없습니다.");
         }
 
-        // 게시글 목록 불러오기 함수 (구조 수정 완료)
         async function loadPosts() {
             try {
                 const res = await fetch('/api/posts');
+                const data = await res.json();
+                const { posts, currentUser } = data; // 구조분해 할당
+                const list = document.getElementById('post-list');
+                
+                if (!posts || posts.length === 0) {
+                    list.innerHTML = '<p style="text-align:center; color:#ccc; padding:20px;">아직 질문이 없습니다.</p>';
+                    return;
+                }
+
+                list.innerHTML = posts.map(p => `
+                    <div class="post-item">
+                        <div class="post-title">${p.title}</div>
+                        <div class="post-content">${p.content}</div>
+                        <div class="post-info">
+                            <span>👤 <span style="color:#27ae60; font-weight:bold;">${p.author_name}</span></span>
+                            <span>
+                                ${p.author_name === currentUser ? `<button class="del-btn" onclick="deletePost(${p.id})">삭제</button>` : ''}
+                                📅 ${new Date(p.created_at).toLocaleDateString()}
+                            </span>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                document.getElementById('post-list').innerHTML = '<p style="color:red; text-align:center;">불러오기 실패</p>';
+            }
+        }
+        loadPosts();
+    </script>
+</body>
+</html>
