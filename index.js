@@ -4,7 +4,6 @@ const path = require('path');
 const session = require('express-session');
 const app = express();
 
-// 1. 서버 기본 설정
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(session({
@@ -14,65 +13,81 @@ app.use(session({
     cookie: { maxAge: 3600000 } 
 }));
 
-// 2. DB 연결 (비밀번호 노출 주의, 환경변수 우선)
-const connectionString = process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_2NLfAupgsz9C@ep-steep-resonance-a1p6ccy6-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require';
+const connectionString = 'postgresql://neondb_owner:npg_2NLfAupgsz9C@ep-steep-resonance-a1p6ccy6-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require';
 const pool = new Pool({ connectionString, ssl: { rejectUnauthorized: false } });
 
-// 3. 페이지 라우팅 (public.index.html 형식 유지)
+// 페이지 연결
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public.index.html')));
 app.get('/page1', (req, res) => res.sendFile(path.join(__dirname, 'public.page1.html')));
 app.get('/page2', (req, res) => res.sendFile(path.join(__dirname, 'public.page2.html')));
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public.login.html')));
 
-// 4. 회원가입 API
+// 회원가입
 app.post('/api/register', async (req, res) => {
     const { username, password, nickname } = req.body;
     try {
         await pool.query('INSERT INTO users (username, password, nickname) VALUES ($1, $2, $3)', [username, password, nickname]);
         res.send('<script>alert("회원가입 성공!"); location.href="/login";</script>');
-    } catch (e) { res.send('<script>alert("중복 오류"); history.back();</script>'); }
+    } catch (e) { res.send('<script>alert("아이디 중복"); history.back();</script>'); }
 });
 
-// 5. 로그인 API
+// 로그인 (관리자 계정 확인 로직 포함)
 app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
-    try {
-        const result = await pool.query('SELECT * FROM users WHERE username = $1 AND password = $2', [username, password]);
-        if (result.rows.length > 0) {
-            req.session.user = { username: result.rows[0].username, nickname: result.rows[0].nickname };
-            res.redirect('/page1');
-        } else { res.send('<script>alert("정보 불일치"); history.back();</script>'); }
-    } catch (e) { res.send('<script>alert("서버 오류"); history.back();</script>'); }
+    const result = await pool.query('SELECT * FROM users WHERE username = $1 AND password = $2', [username, password]);
+    if (result.rows.length > 0) {
+        req.session.user = {
+            username: result.rows[0].username,
+            nickname: result.rows[0].nickname
+        };
+        res.redirect('/page1');
+    } else { res.send('<script>alert("정보가 틀렸습니다."); history.back();</script>'); }
 });
 
-// 6. 게시글 목록 API
+// 게시글 목록 (공지가 맨 위로 오도록 정렬)
 app.get('/api/posts', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM posts ORDER BY created_at DESC');
+        const result = await pool.query('SELECT * FROM posts ORDER BY is_notice DESC, created_at DESC');
         res.json({ posts: result.rows, currentUser: req.session.user || null });
     } catch (e) { res.status(500).json({ error: "DB Error" }); }
 });
 
-// 7. 게시글 작성 API (일반 글로만 저장)
+// 게시글 작성 (공지 등록 기능 추가)
 app.post('/api/posts', async (req, res) => {
     if (!req.session.user) return res.redirect('/login');
-    const { title, content } = req.body;
-    try {
-        await pool.query('INSERT INTO posts (title, content, author_name, is_notice) VALUES ($1, $2, $3, false)', [title, content, req.session.user.nickname]);
-        res.redirect('/page1');
-    } catch (e) { res.send('<script>alert("작성 오류"); history.back();</script>'); }
+    const { title, content, isNotice } = req.body;
+    const author = req.session.user.nickname;
+    
+    // 🔴 오직 ohjungwoo08만 공지를 등록할 수 있음
+    const noticeFlag = (req.session.user.username === 'ohjungwoo08' && isNotice === 'on');
+
+    await pool.query(
+        'INSERT INTO posts (title, content, author_name, is_notice) VALUES ($1, $2, $3, $4)', 
+        [title, content, author, noticeFlag]
+    );
+    res.redirect('/page1');
 });
 
-// 8. ★ 핵심: 게시글 삭제 API (본인 글만)
+// 삭제 기능 (슈퍼 관리자는 모든 글 삭제 가능)
 app.delete('/api/posts/:id', async (req, res) => {
     if (!req.session.user) return res.status(401).send("로그인 필요");
+    
+    const postId = req.params.id;
+    const user = req.session.user;
+
     try {
-        const result = await pool.query('DELETE FROM posts WHERE id = $1 AND author_name = $2', [req.params.id, req.session.user.nickname]);
+        let result;
+        if (user.username === 'ohjungwoo08') {
+            // 🔴 슈퍼 관리자는 아이디 상관없이 삭제 가능
+            result = await pool.query('DELETE FROM posts WHERE id = $1', [postId]);
+        } else {
+            // 일반 사용자는 본인 닉네임 글만 삭제 가능
+            result = await pool.query('DELETE FROM posts WHERE id = $1 AND author_name = $2', [postId, user.nickname]);
+        }
+        
         if (result.rowCount > 0) res.sendStatus(200);
-        else res.status(403).send("권한 없음");
+        else res.status(403).send("삭제 권한이 없습니다.");
     } catch (e) { res.status(500).send("서버 오류"); }
 });
 
-// 9. 포트 설정
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log(`Server live on ${PORT}`));
+app.listen(process.env.PORT || 3000);
