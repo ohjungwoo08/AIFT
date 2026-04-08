@@ -16,7 +16,7 @@
         .post-title { font-weight: bold; color: #333; font-size: 17px; margin-bottom: 5px; }
         .post-content { color: #666; font-size: 14px; white-space: pre-wrap; margin-bottom: 10px; line-height: 1.5; }
         .post-info { font-size: 12px; color: #aaa; display: flex; justify-content: space-between; align-items: center; }
-        .del-btn { background: #ff7675; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; margin-right: 5px; }
+        .del-btn { background: #ff7675; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; }
     </style>
 </head>
 <body>
@@ -34,11 +34,8 @@
     </div>
 
     <script>
+        // 게시글 삭제 함수
         async function deletePost(id) {
             if (!confirm("삭제하시겠습니까?")) return;
-            const res = await fetch(`/api/posts/${id}`, { method: 'DELETE' });
-            if (res.ok) {
-                loadPosts();
-            } else {
-                const errorMsg = await res.text();
-                alert(
+            try {
+                const res = await fetch(`/api/posts/${id}`, { method: 'DELETE
