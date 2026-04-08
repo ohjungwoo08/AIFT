@@ -118,3 +118,46 @@
     </div>
 </body>
 </html>
+
+<div id="top-right-auth" style="
+    position: absolute; 
+    top: 20px; 
+    right: 20px; 
+    padding: 10px 15px; 
+    background-color: rgba(255, 255, 255, 0.9); 
+    border: 1px solid #ddd; 
+    border-radius: 20px; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    font-size: 14px;
+    z-index: 1000;
+">
+    <span id="user-status-text">확인 중...</span>
+</div>
+
+<script>
+    async function fetchTopUserInfo() {
+        const statusText = document.getElementById('user-status-text');
+        try {
+            const response = await fetch('/api/user/info');
+            const data = await response.json();
+
+            if (data.isLoggedIn) {
+                // 로그인 상태: 닉네임 강조 표시
+                statusText.innerHTML = `
+                    <span style="color: #2c3e50; font-weight: bold;">👤 ${data.nickname} 소장님</span>
+                    <button onclick="location.href='/page1'" style="margin-left:8px; cursor:pointer; border:none; background:none; color:#007bff; text-decoration:underline;">[게시판]</button>
+                `;
+            } else {
+                // 로그아웃 상태: 로그인 링크
+                statusText.innerHTML = `
+                    <a href="/login" style="text-decoration:none; color:#666;">로그인하세요</a>
+                `;
+            }
+        } catch (error) {
+            statusText.innerText = "연결 오류";
+        }
+    }
+
+    // 문서 로드 완료 시 실행
+    document.addEventListener('DOMContentLoaded', fetchTopUserInfo);
+</script>
