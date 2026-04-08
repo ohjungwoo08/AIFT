@@ -4,6 +4,7 @@ const path = require('path');
 const session = require('express-session');
 const app = express();
 
+// 기본 설정
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(session({
@@ -13,15 +14,15 @@ app.use(session({
     cookie: { maxAge: 3600000 } 
 }));
 
-// Render 설정(DATABASE_URL) 우선 사용
+// DB 연결 설정
 const connectionString = process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_2NLfAupgsz9C@ep-steep-resonance-a1p6ccy6-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require';
 const pool = new Pool({ connectionString, ssl: { rejectUnauthorized: false } });
 
 // --- 페이지 연결 ---
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public.index.html')));
-app.get('/page1', (req, res) => res.sendFile(path.join(__dirname, 'public.page1.html')));
-app.get('/page2', (req, res) => res.sendFile(path.join(__dirname, 'public.page2.html')));
-app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public.login.html')));
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public/index.html')));
+app.get('/page1', (req, res) => res.sendFile(path.join(__dirname, 'public/page1.html')));
+app.get('/page2', (req, res) => res.sendFile(path.join(__dirname, 'public/page2.html')));
+app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public/login.html')));
 
 // --- 회원가입 API ---
 app.post('/api/register', async (req, res) => {
@@ -49,4 +50,45 @@ app.post('/api/login', async (req, res) => {
     } catch (e) { res.send('<script>alert("서버 오류"); history.back();</script>'); }
 });
 
-// ---
+// --- 게시글 목록 API ---
+app.get('/api/posts', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM posts ORDER BY is_notice DESC, created_at DESC');
+        res.json({ posts: result.rows, currentUser: req.session.user || null });
+    } catch (e) { res.status(500).json({ error: "DB Error" }); }
+});
+
+// --- 게시글 작성 API (ohjungwoo08만 공지 가능) ---
+app.post('/api/posts', async (req, res) => {
+    if (!req.session.user) return res.redirect('/login');
+    const { title, content, isNotice } = req.body;
+    const author = req.session.user.nickname;
+    const username = req.session.user.username;
+    const noticeFlag = (username === 'ohjungwoo08' && isNotice === 'on');
+
+    try {
+        await pool.query(
+            'INSERT INTO posts (title, content, author_name, is_notice) VALUES ($1, $2, $3, $4)', 
+            [title, content, author, noticeFlag]
+        );
+        res.redirect('/page1');
+    } catch (e) { res.send('<script>alert("전송 오류"); history.back();</script>'); }
+});
+
+// --- 게시글 삭제 API (본인 글만 삭제) ---
+app.delete('/api/posts/:id', async (req, res) => {
+    if (!req.session.user) return res.status(401).send("로그인 필요");
+    const postId = req.params.id;
+    const user = req.session.user;
+    try {
+        const result = await pool.query('DELETE FROM posts WHERE id = $1 AND author_name = $2', [postId, user.nickname]);
+        if (result.rowCount > 0) res.sendStatus(200);
+        else res.status(403).send("본인 글만 삭제 가능");
+    } catch (e) { res.status(500).send("서버 오류"); }
+});
+
+// --- 서버 시작 ---
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});// ---
