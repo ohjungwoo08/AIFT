@@ -1,163 +1,88 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AIFT - 오정우 연구실</title>
-    <style>
-        :root {
-            --bg-start: #2ecc71;
-            --bg-end: #a1ffce;
-            --green-main: #27ae60;
-            --green-dark: #1e8449; /* 부제목용 진한 초록 */
-        }
+const express = require('express');
+const { Pool } = require('pg');
+const path = require('path');
+const session = require('express-session');
+const app = express();
 
-        body {
-            background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
-            font-family: 'Pretendard', 'Malgun Gothic', sans-serif;
-            display: flex; align-items: center; justify-content: center;
-            min-height: 100vh; margin: 0; position: relative;
-        }
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-        /* 배경 패턴 (투명도 유지) */
-        body::before {
-            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-image: url('https://img.freepik.com/premium-vector/seamless-pattern-with-chemical-elements-and-laboratory-equipment-vector-flat-illustration-isolated-on-white-background_151139-242.jpg?w=1480');
-            background-repeat: repeat; background-size: 300px; opacity: 0.08; z-index: -1;
-        }
+// 세션 설정: 로그인 유지를 위해 필수입니다.
+app.use(session({
+    secret: 'aift-secure-key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { 
+        maxAge: 3600000, // 1시간 유지
+        secure: false 
+    } 
+}));
 
-        .card {
-            background: white; 
-            padding: 50px 30px; 
-            border-radius: 25px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
-            width: 100%;
-            max-width: 380px; /* 카드 폭 고정으로 대칭 확보 */
-            text-align: center;
-            box-sizing: border-box;
-        }
+// DB 연결 (Neon PostgreSQL)
+const connectionString = 'postgresql://neondb_owner:npg_2NLfAupgsz9C@ep-steep-resonance-a1p6ccy6-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require';
+const pool = new Pool({ connectionString, ssl: { rejectUnauthorized: false } });
 
-        h1 { 
-            color: var(--green-main); 
-            margin: 0 0 10px 0; 
-            font-size: 32px; 
-            letter-spacing: -1px;
-        }
+// --- [API] 유저 정보 조회 (메인 페이지 우측 상단용) ---
+app.get('/api/user/info', (req, res) => {
+    if (req.session && req.session.user) {
+        res.json({ 
+            isLoggedIn: true, 
+            nickname: req.session.user.nickname,
+            username: req.session.user.username 
+        });
+    } else {
+        res.json({ isLoggedIn: false });
+    }
+});
 
-        /* 요청하신 진한 초록색 부제목 */
-        .sub-title { 
-            color: var(--green-dark); 
-            font-weight: 800; 
-            font-size: 15px; 
-            margin-bottom: 40px; 
-            line-height: 1.5;
-            word-break: keep-all; /* 단어 단위 줄바꿈으로 대칭 유지 */
-        }
+// --- [페이지 라우팅] ---
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public.index.html')));
+app.get('/page1', (req, res) => res.sendFile(path.join(__dirname, 'public.page1.html')));
+app.get('/page2', (req, res) => res.sendFile(path.join(__dirname, 'public.page2.html')));
+app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public.login.html')));
 
-        .btn-group { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 12px; /* 버튼 사이 간격 일정하게 */
-        }
-        
-        .btn {
-            display: block;
-            width: 100%; /* 가로 꽉 채워서 대칭 */
-            padding: 16px 0; /* 표준적인 버튼 높이 */
-            font-size: 16px; 
-            font-weight: bold;
-            border-radius: 12px; 
-            border: none; 
-            cursor: pointer;
-            transition: 0.2s; 
-            text-decoration: none;
-            box-sizing: border-box;
-        }
+// --- [API] 회원가입 ---
+app.post('/api/register', async (req, res) => {
+    const { username, password, nickname } = req.body;
+    try {
+        await pool.query('INSERT INTO users (username, password, nickname) VALUES ($1, $2, $3)', [username, password, nickname]);
+        res.send('<script>alert("회원가입 성공!"); location.href="/login";</script>');
+    } catch (e) { res.send('<script>alert("아이디 중복 또는 오류"); history.back();</script>'); }
+});
 
-        /* 자료실 버튼 (메인 초록) */
-        .btn-materials { 
-            background: var(--green-main); 
-            color: white; 
-        }
-        .btn-materials:hover { opacity: 0.9; transform: translateY(-2px); }
+// --- [API] 로그인 ---
+app.post('/api/login', async (req, res) => {
+    const { username, password } = req.body;
+    try {
+        const result = await pool.query('SELECT * FROM users WHERE username = $1 AND password = $2', [username, password]);
+        if (result.rows.length > 0) {
+            req.session.user = {
+                username: result.rows[0].username,
+                nickname: result.rows[0].nickname
+            };
+            res.redirect('/'); // 로그인 후 메인으로 이동
+        } else { res.send('<script>alert("정보가 틀렸습니다."); history.back();</script>'); }
+    } catch (e) { res.send('<script>alert("서버 오류"); history.back();</script>'); }
+});
 
-        /* 게시판 버튼 (테두리 스타일) */
-        .btn-qna { 
-            background: #f0fdf4; 
-            color: var(--green-main); 
-            border: 2px solid var(--green-main); 
-        }
-        .btn-qna:hover { background: #e8f9ed; transform: translateY(-2px); }
+// --- [API] 게시글 목록 (최신순) ---
+app.get('/api/posts', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM posts ORDER BY created_at DESC');
+        // 중요: 구조분해 할당을 위해 posts와 currentUser를 함께 보냄
+        res.json({ 
+            posts: result.rows, 
+            currentUser: req.session.user ? req.session.user.nickname : null 
+        });
+    } catch (e) { res.status(500).json({ error: "DB Error" }); }
+});
 
-        /* 로그인 링크 */
-        .login-link {
-            margin-top: 30px; 
-            display: inline-block;
-            color: #bbb; 
-            font-size: 13px; 
-            text-decoration: none;
-            transition: 0.2s;
-        }
-        .login-link:hover { color: var(--green-main); }
-    </style>
-</head>
-<body>
-    <div class="card">
-        <h1>오정우 연구실</h1>
-        
-        <div class="sub-title">
-            화학 및 기타 자료들과 상시 질문게시판이 구비된 오정우 연구실
-        </div>
-        
-        <div class="btn-group">
-            <a href="/page2" class="btn btn-materials">📂 화학 및 기타 학습자료</a>
-            <a href="/page1" class="btn btn-qna">💬 질문 게시판 바로가기</a>
-        </div>
-
-        <a href="/login" class="login-link">🔑 로그인 / 회원가입</a>
-    </div>
-</body>
-</html>
-
-<div id="top-right-auth" style="
-    position: absolute; 
-    top: 20px; 
-    right: 20px; 
-    padding: 10px 15px; 
-    background-color: rgba(255, 255, 255, 0.9); 
-    border: 1px solid #ddd; 
-    border-radius: 20px; 
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    font-size: 14px;
-    z-index: 1000;
-">
-    <span id="user-status-text">확인 중...</span>
-</div>
-
-<script>
-    async function fetchTopUserInfo() {
-        const statusText = document.getElementById('user-status-text');
-        try {
-            const response = await fetch('/api/user/info');
-            const data = await response.json();
-
-            if (data.isLoggedIn) {
-                // 로그인 상태: 닉네임 강조 표시
-                statusText.innerHTML = `
-                    <span style="color: #2c3e50; font-weight: bold;">👤 ${data.nickname} 소장님</span>
-                    <button onclick="location.href='/page1'" style="margin-left:8px; cursor:pointer; border:none; background:none; color:#007bff; text-decoration:underline;">[게시판]</button>
-                `;
-            } else {
-                // 로그아웃 상태: 로그인 링크
-                statusText.innerHTML = `
-                    <a href="/login" style="text-decoration:none; color:#666;">로그인하세요</a>
-                `;
-            }
-        } catch (error) {
-            statusText.innerText = "연결 오류";
-        }
-    }
-
-    // 문서 로드 완료 시 실행
-    document.addEventListener('DOMContentLoaded', fetchTopUserInfo);
-</script>
+// --- [API] 게시글 작성 ---
+app.post('/api/posts', async (req, res) => {
+    if (!req.session.user) return res.redirect('/login');
+    const { title, content } = req.body;
+    const author = req.session.user.nickname;
+    try {
+        await pool.query(
+            'INSERT INTO posts (title, content, author_name, is_notice) VALUES ($1, $2, $3, false)', 
+            [title
