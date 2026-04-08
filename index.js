@@ -19,10 +19,10 @@ const connectionString = process.env.DATABASE_URL || 'postgresql://neondb_owner:
 const pool = new Pool({ connectionString, ssl: { rejectUnauthorized: false } });
 
 // --- 페이지 연결 ---
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public/index.html')));
-app.get('/page1', (req, res) => res.sendFile(path.join(__dirname, 'public/page1.html')));
-app.get('/page2', (req, res) => res.sendFile(path.join(__dirname, 'public/page2.html')));
-app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public/login.html')));
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public.index.html')));
+app.get('/page1', (req, res) => res.sendFile(path.join(__dirname, 'public.page1.html')));
+app.get('/page2', (req, res) => res.sendFile(path.join(__dirname, 'public.page2.html')));
+app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public.login.html')));
 
 // --- 회원가입 API ---
 app.post('/api/register', async (req, res) => {
@@ -50,26 +50,25 @@ app.post('/api/login', async (req, res) => {
     } catch (e) { res.send('<script>alert("서버 오류"); history.back();</script>'); }
 });
 
-// --- 게시글 목록 API ---
+// --- 게시글 목록 API (공지 고정 없이 최신순 정렬) ---
 app.get('/api/posts', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM posts ORDER BY is_notice DESC, created_at DESC');
+        const result = await pool.query('SELECT * FROM posts ORDER BY created_at DESC');
         res.json({ posts: result.rows, currentUser: req.session.user || null });
     } catch (e) { res.status(500).json({ error: "DB Error" }); }
 });
 
-// --- 게시글 작성 API (ohjungwoo08만 공지 가능) ---
+// --- 게시글 작성 API (공지 기능 제거) ---
 app.post('/api/posts', async (req, res) => {
     if (!req.session.user) return res.redirect('/login');
-    const { title, content, isNotice } = req.body;
+    const { title, content } = req.body;
     const author = req.session.user.nickname;
-    const username = req.session.user.username;
-    const noticeFlag = (username === 'ohjungwoo08' && isNotice === 'on');
 
     try {
+        // is_notice 필드는 항상 false로 저장하여 공지 기능을 비활성화합니다.
         await pool.query(
-            'INSERT INTO posts (title, content, author_name, is_notice) VALUES ($1, $2, $3, $4)', 
-            [title, content, author, noticeFlag]
+            'INSERT INTO posts (title, content, author_name, is_notice) VALUES ($1, $2, $3, false)', 
+            [title, content, author]
         );
         res.redirect('/page1');
     } catch (e) { res.send('<script>alert("전송 오류"); history.back();</script>'); }
@@ -91,4 +90,4 @@ app.delete('/api/posts/:id', async (req, res) => {
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
-});// ---
+});
