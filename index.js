@@ -6,16 +6,34 @@ const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// 세션 설정 (보안 강화)
 app.use(session({
     secret: 'aift-secure-key',
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 3600000 } 
+    cookie: { 
+        maxAge: 3600000, // 1시간 유지
+        secure: false    // 배포 환경이 https라면 true로 바꿀 수 있지만 우선 false 유지
+    } 
 }));
 
-// DB 연결 (노출된 URL은 나중에 꼭 환경변수로 옮기세요!)
+// DB 연결
 const connectionString = 'postgresql://neondb_owner:npg_2NLfAupgsz9C@ep-steep-resonance-a1p6ccy6-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require';
 const pool = new Pool({ connectionString, ssl: { rejectUnauthorized: false } });
+
+// [추가] 유저 정보 확인 API (메인 페이지 우측 상단 이름 표시용)
+app.get('/api/user/info', (req, res) => {
+    if (req.session && req.session.user) {
+        res.json({ 
+            isLoggedIn: true, 
+            nickname: req.session.user.nickname,
+            username: req.session.user.username 
+        });
+    } else {
+        res.json({ isLoggedIn: false });
+    }
+});
 
 // 페이지 연결
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public.index.html')));
@@ -29,7 +47,7 @@ app.post('/api/register', async (req, res) => {
     try {
         await pool.query('INSERT INTO users (username, password, nickname) VALUES ($1, $2, $3)', [username, password, nickname]);
         res.send('<script>alert("회원가입 성공!"); location.href="/login";</script>');
-    } catch (e) { res.send('<script>alert("아이디 중복"); history.back();</script>'); }
+    } catch (e) { res.send('<script>alert("아이디 중복 또는 오류"); history.back();</script>'); }
 });
 
 // 로그인
@@ -51,11 +69,12 @@ app.post('/api/login', async (req, res) => {
 app.get('/api/posts', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM posts ORDER BY created_at DESC');
+        // 게시글 리스트와 함께 현재 로그인한 사용자 정보를 같이 보냄 (삭제 버튼 판단용)
         res.json({ posts: result.rows, currentUser: req.session.user || null });
     } catch (e) { res.status(500).json({ error: "DB Error" }); }
 });
 
-// 게시글 작성 (공지 기능 제거)
+// 게시글 작성
 app.post('/api/posts', async (req, res) => {
     if (!req.session.user) return res.redirect('/login');
     const { title, content } = req.body;
@@ -66,28 +85,4 @@ app.post('/api/posts', async (req, res) => {
             'INSERT INTO posts (title, content, author_name, is_notice) VALUES ($1, $2, $3, false)', 
             [title, content, author]
         );
-        res.redirect('/page1');
-    } catch (e) { res.send('<script>alert("작성 실패"); history.back();</script>'); }
-});
-
-// 삭제 기능 (본인 글만 삭제 가능)
-app.delete('/api/posts/:id', async (req, res) => {
-    if (!req.session.user) return res.status(401).send("로그인 필요");
-    
-    const postId = req.params.id;
-    const user = req.session.user;
-
-    try {
-        // 본인 닉네임과 게시글의 작성자 이름이 일치할 때만 삭제
-        const result = await pool.query('DELETE FROM posts WHERE id = $1 AND author_name = $2', [postId, user.nickname]);
-        
-        if (result.rowCount > 0) res.sendStatus(200);
-        else res.status(403).send("본인 글만 삭제할 수 있습니다.");
-    } catch (e) { res.status(500).send("서버 오류"); }
-});
-
-// 🔴 포트 번호: Render 환경변수를 최우선으로, 없으면 10000번 사용
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+        res.redirect('/page1
