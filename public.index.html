@@ -136,26 +136,8 @@
         async function fetchTopUserInfo() {
             const statusText = document.getElementById('user-status-text');
             try {
-                // 서버로부터 로그인 정보를 가져옴
                 const response = await fetch('/api/user/info');
                 const data = await response.json();
 
                 if (data.isLoggedIn) {
-                    statusText.innerHTML = `
-                        <span style="color: #2c3e50; font-weight: bold;">👤 ${data.nickname} 소장님</span>
-                        <button onclick="location.href='/page1'" style="margin-left:8px; cursor:pointer; border:none; background:none; color:#007bff; text-decoration:underline; font-size:12px;">[게시판]</button>
-                    `;
-                } else {
-                    statusText.innerHTML = `
-                        <a href="/login" style="text-decoration:none; color:#666;">로그인하세요</a>
-                    `;
-                }
-            } catch (error) {
-                statusText.innerText = "연결 오류";
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', fetchTopUserInfo);
-    </script>
-</body>
-</html>
+                    // 핵심 수정 부분: 닉네임(data.nickname)
