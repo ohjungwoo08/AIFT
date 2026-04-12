@@ -10,14 +10,12 @@
         form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px; background: #fafafa; padding: 20px; border-radius: 15px; }
         input, textarea { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
         .submit-btn { background: #27ae60; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        
         #post-list { border-top: 2px solid #eee; padding-top: 20px; }
         .post-item { border-bottom: 1px solid #f0f0f0; padding: 15px 0; }
         .notice-item { background: #fff9db !important; border: 1px solid #fab005 !important; border-radius: 12px; padding: 15px !important; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .post-title { font-weight: bold; color: #333; font-size: 17px; margin-bottom: 5px; }
         .post-content { color: #666; font-size: 14px; white-space: pre-wrap; margin-bottom: 10px; line-height: 1.5; }
         .post-info { font-size: 12px; color: #aaa; display: flex; justify-content: space-between; align-items: center; }
-        
         .del-btn { background: #ff7675; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; margin-left: 5px; }
         .edit-btn { background: #54a0ff; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; margin-left: 5px; }
         .edit-area { width: 100%; box-sizing: border-box; margin-bottom: 10px; font-family: inherit; border: 1px solid #54a0ff; border-radius: 8px; padding: 10px; }
@@ -26,27 +24,21 @@
 <body>
     <div class="container">
         <h2>💬 멘토링 및 질문 게시판</h2>
-        
         <form action="/api/posts" method="POST">
             <input type="text" name="title" placeholder="제목" required>
             <textarea name="content" rows="3" placeholder="내용을 입력하세요 (로그인 필수)" required></textarea>
-            
             <div id="admin-only" style="display:none; font-size:13px; color:#e67e22; margin-bottom:10px;">
                 <label><input type="checkbox" name="isNotice"> 📢 이 글을 필독 공지로 등록합니다.</label>
             </div>
-            
             <button type="submit" class="submit-btn">질문 등록</button>
         </form>
-
         <div id="post-list">
             <p style="text-align:center; color:#ccc;">게시글을 불러오는 중...</p>
         </div>
-        
         <div style="text-align:center; margin-top:30px;">
             <a href="/" style="color:#bbb; text-decoration:none; font-size:13px;">🏠 메인 화면으로 돌아가기</a>
         </div>
     </div>
-
     <script>
         async function loadPosts() {
             try {
@@ -83,10 +75,7 @@
 
         function showEditForm(id) {
             const contentDiv = document.getElementById(`content-${id}`);
-            const titleDiv = document.getElementById(`title-${id}`);
             const originalContent = contentDiv.innerText;
-            
-            // 수정 시 제목은 유지하고 내용만 수정 가능하도록 UI 변경
             contentDiv.innerHTML = `
                 <textarea id="input-${id}" class="edit-area" rows="4">${originalContent}</textarea>
                 <div style="text-align:right;">
@@ -99,19 +88,13 @@
         async function updatePost(id) {
             const newContent = document.getElementById(`input-${id}`).value;
             if(!newContent.trim()) return alert("내용을 입력해주세요.");
-
             const res = await fetch(`/api/posts/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ content: newContent })
             });
-
-            if (res.ok) {
-                alert("수정 완료!");
-                loadPosts();
-            } else {
-                alert("수정에 실패했습니다. (서버 오류 또는 권한 없음)");
-            }
+            if (res.ok) { alert("수정 완료!"); loadPosts(); } 
+            else { alert("수정에 실패했습니다."); }
         }
 
         async function deletePost(id) {
@@ -120,7 +103,6 @@
             if (res.ok) loadPosts();
             else alert("삭제 권한이 없습니다.");
         }
-
         loadPosts();
     </script>
 </body>
