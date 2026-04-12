@@ -18,12 +18,9 @@
         .post-content { color: #666; font-size: 14px; white-space: pre-wrap; margin-bottom: 10px; line-height: 1.5; }
         .post-info { font-size: 12px; color: #aaa; display: flex; justify-content: space-between; align-items: center; }
         
-        /* 버튼 스타일 유지 및 추가 */
         .del-btn { background: #ff7675; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; margin-left: 5px; }
         .edit-btn { background: #54a0ff; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; margin-left: 5px; }
-        
-        /* 수정 모드용 스타일 */
-        .edit-area { width: 100%; box-sizing: border-box; margin-bottom: 10px; font-family: inherit; }
+        .edit-area { width: 100%; box-sizing: border-box; margin-bottom: 10px; font-family: inherit; border: 1px solid #54a0ff; border-radius: 8px; padding: 10px; }
     </style>
 </head>
 <body>
@@ -52,53 +49,57 @@
 
     <script>
         async function loadPosts() {
-            const res = await fetch('/api/posts');
-            const { posts, currentUser } = await res.json();
-            const list = document.getElementById('post-list');
+            try {
+                const res = await fetch('/api/posts');
+                const { posts, currentUser } = await res.json();
+                const list = document.getElementById('post-list');
 
-            if (currentUser && currentUser.username === 'ohjungwoo08') {
-                document.getElementById('admin-only').style.display = 'block';
-            }
+                if (currentUser && currentUser.username === 'ohjungwoo08') {
+                    document.getElementById('admin-only').style.display = 'block';
+                }
 
-            list.innerHTML = posts.map(p => {
-                const isAuthor = currentUser && p.author_name === currentUser.nickname;
-                const isAdmin = currentUser && currentUser.username === 'ohjungwoo08';
+                list.innerHTML = posts.map(p => {
+                    const isAuthor = currentUser && p.author_name === currentUser.nickname;
+                    const isAdmin = currentUser && currentUser.username === 'ohjungwoo08';
 
-                return `
-                <div class="post-item ${p.is_notice ? 'notice-item' : ''}" id="post-${p.id}">
-                    <div class="post-title">
-                        ${p.is_notice ? '<span style="color:#f08c00; margin-right:5px;">[공지]</span>' : ''} ${p.title}
+                    return `
+                    <div class="post-item ${p.is_notice ? 'notice-item' : ''}" id="post-${p.id}">
+                        <div class="post-title" id="title-${p.id}">
+                            ${p.is_notice ? '<span style="color:#f08c00; margin-right:5px;">[공지]</span>' : ''} ${p.title}
+                        </div>
+                        <div class="post-content" id="content-${p.id}">${p.content}</div>
+                        <div class="post-info">
+                            <span>👤 <span style="color:#27ae60; font-weight:bold;">${p.author_name}</span></span>
+                            <span>
+                                ${isAuthor ? `<button class="edit-btn" onclick="showEditForm(${p.id})">수정</button>` : ''}
+                                ${(isAuthor || isAdmin) ? `<button class="del-btn" onclick="deletePost(${p.id})">삭제</button>` : ''}
+                                📅 ${new Date(p.created_at).toLocaleDateString()}
+                            </span>
+                        </div>
                     </div>
-                    <div class="post-content" id="content-${p.id}">${p.content}</div>
-                    <div class="post-info">
-                        <span>👤 <span style="color:#27ae60; font-weight:bold;">${p.author_name}</span></span>
-                        <span>
-                            ${isAuthor ? `<button class="edit-btn" onclick="showEditForm(${p.id})">수정</button>` : ''}
-                            ${(isAuthor || isAdmin) ? `<button class="del-btn" onclick="deletePost(${p.id})">삭제</button>` : ''}
-                            📅 ${new Date(p.created_at).toLocaleDateString()}
-                        </span>
-                    </div>
-                </div>
-            `}).join('');
+                `}).join('');
+            } catch (e) { console.error("데이터 로드 실패"); }
         }
 
-        // 수정 폼 보여주기
         function showEditForm(id) {
             const contentDiv = document.getElementById(`content-${id}`);
+            const titleDiv = document.getElementById(`title-${id}`);
             const originalContent = contentDiv.innerText;
             
+            // 수정 시 제목은 유지하고 내용만 수정 가능하도록 UI 변경
             contentDiv.innerHTML = `
                 <textarea id="input-${id}" class="edit-area" rows="4">${originalContent}</textarea>
                 <div style="text-align:right;">
-                    <button class="edit-btn" style="background:#2ecc71;" onclick="updatePost(${id})">저장</button>
+                    <button class="edit-btn" style="background:#2ecc71;" onclick="updatePost(${id})">완료</button>
                     <button class="del-btn" style="background:#95a5a6;" onclick="loadPosts()">취소</button>
                 </div>
             `;
         }
 
-        // 수정 내용 서버에 저장
         async function updatePost(id) {
             const newContent = document.getElementById(`input-${id}`).value;
+            if(!newContent.trim()) return alert("내용을 입력해주세요.");
+
             const res = await fetch(`/api/posts/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -106,10 +107,10 @@
             });
 
             if (res.ok) {
-                alert("수정되었습니다.");
+                alert("수정 완료!");
                 loadPosts();
             } else {
-                alert("수정 권한이 없습니다.");
+                alert("수정에 실패했습니다. (서버 오류 또는 권한 없음)");
             }
         }
 
@@ -117,7 +118,7 @@
             if (!confirm("정말 삭제하시겠습니까?")) return;
             const res = await fetch(`/api/posts/${id}`, { method: 'DELETE' });
             if (res.ok) loadPosts();
-            else alert("권한이 없습니다.");
+            else alert("삭제 권한이 없습니다.");
         }
 
         loadPosts();
