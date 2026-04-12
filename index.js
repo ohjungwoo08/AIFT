@@ -5,7 +5,7 @@ const session = require('express-session');
 const app = express();
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true })); // 👈 HTML Form 데이터를 받기 위해 필수!
 app.use(session({
     secret: 'aift-secure-key-2026',
     resave: false,
@@ -16,32 +16,32 @@ app.use(session({
 const connectionString = 'postgresql://neondb_owner:npg_2NLfAupgsz9C@ep-steep-resonance-a1p6ccy6-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require';
 const pool = new Pool({ connectionString, ssl: { rejectUnauthorized: false } });
 
+// 🔴 정확한 유저 정보 확인 (아이디: ohjungwoo08 / 비번: 123)
 const users = [
     { username: 'ohjungwoo08', password: '123', nickname: '오정우' },
     { username: 'test', password: '123', nickname: '테스트유저' }
 ];
 
-// --- [ 페이지 라우팅 ] ---
+// 페이지 라우팅
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public.index.html')));
 app.get('/page1', (req, res) => res.sendFile(path.join(__dirname, 'public.page1.html')));
 app.get('/page2', (req, res) => res.sendFile(path.join(__dirname, 'public.page2.html')));
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public.login.html')));
 
-// --- [ 로그인 로직 수정 ] ---
-// 소장님 HTML에서 /api/login으로 보내든 /login으로 보내든 둘 다 처리하도록 만듭니다.
-const loginHandler = (req, res) => {
+// 🟢 로그인 핸들러 (HTML의 /api/login 요청을 여기서 처리)
+app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
+    console.log("로그인 시도:", username); // Render 로그에서 확인 가능
+
     const user = users.find(u => u.username === username && u.password === password);
+
     if (user) {
         req.session.user = user;
-        res.redirect('/');
+        return res.redirect('/'); // 로그인 성공 시 메인으로
     } else {
-        res.send('<script>alert("정보가 일치하지 않습니다."); history.back();</script>');
+        return res.send('<script>alert("아이디 또는 비밀번호가 일치하지 않습니다."); history.back();</script>');
     }
-};
-
-app.post('/login', loginHandler);
-app.post('/api/login', loginHandler); // 🔴 이 부분을 추가해서 에러를 해결합니다!
+});
 
 app.get('/logout', (req, res) => {
     req.session.destroy();
@@ -52,7 +52,7 @@ app.get('/api/user/info', (req, res) => {
     res.json(req.session.user ? { isLoggedIn: true, ...req.session.user } : { isLoggedIn: false });
 });
 
-// --- [ 게시판 API ] ---
+// 게시판 API (수정/삭제 권한 포함)
 app.get('/api/posts', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM posts ORDER BY is_notice DESC, created_at DESC');
