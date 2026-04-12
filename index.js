@@ -40,9 +40,11 @@ app.post('/api/posts', async (req, res) => {
     if (!req.session.user) return res.redirect('/login');
     const { title, content, isNotice } = req.body;
     const isNoticeFlag = (req.session.user.username === 'ohjungwoo08' && isNotice === 'on');
-    await pool.query('INSERT INTO posts (title, content, author_name, is_notice) VALUES ($1, $2, $3, $4)', 
-        [title, content, req.session.user.nickname, isNoticeFlag]);
-    res.redirect('/page1');
+    try {
+        await pool.query('INSERT INTO posts (title, content, author_name, is_notice) VALUES ($1, $2, $3, $4)', 
+            [title, content, req.session.user.nickname, isNoticeFlag]);
+        res.redirect('/page1');
+    } catch (e) { res.status(500).send("작성 실패"); }
 });
 
 // 🔴 수정 기능 (작성자 본인만 가능)
@@ -64,4 +66,16 @@ app.delete('/api/posts/:id', async (req, res) => {
     const isAdmin = req.session.user.username === 'ohjungwoo08';
     try {
         const query = isAdmin ? 'DELETE FROM posts WHERE id = $1' : 'DELETE FROM posts WHERE id = $1 AND author_name = $2';
-        const params = isAdmin ? [req.params
+        const params = isAdmin ? [req.params.id] : [req.params.id, req.session.user.nickname];
+        
+        const result = await pool.query(query, params);
+        if (result.rowCount > 0) res.sendStatus(200);
+        else res.status(403).send("Forbidden");
+    } catch (e) { res.status(500).send("Error"); }
+});
+
+// 포트 설정 (Render 배포 핵심)
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
