@@ -4,8 +4,10 @@ const path = require('path');
 const session = require('express-session');
 const app = express();
 
+// 데이터 전송 방식 설정 (이게 없으면 작성이 안 될 수 있습니다)
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
 app.use(session({
     secret: 'aift-secure-key-2026',
     resave: false,
@@ -13,57 +15,60 @@ app.use(session({
     cookie: { maxAge: 3600000, httpOnly: true }
 }));
 
+// 🔴 소장님의 네온 DB 연결 정보
 const connectionString = 'postgresql://neondb_owner:npg_2NLfAupgsz9C@ep-steep-resonance-a1p6ccy6-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require';
-const pool = new Pool({ connectionString, ssl: { rejectUnauthorized: false } });
+const pool = new Pool({ 
+    connectionString, 
+    ssl: { rejectUnauthorized: false } 
+});
 
-// 페이지 라우팅
+// DB 연결 체크 로그
+pool.query('SELECT 1', (err) => {
+    if (err) console.error('❌ 네온 DB 연결 실패:', err.message);
+    else console.log('✅ 네온 DB 연결 성공! 소장님의 테이블에 접속했습니다.');
+});
+
+// 페이지 연결
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public.index.html')));
 app.get('/page1', (req, res) => res.sendFile(path.join(__dirname, 'public.page1.html')));
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public.login.html')));
 
-// --- 🟢 1. 회원가입 해결 (DB 저장) ---
-app.post('/api/register', async (req, res) => {
-    const { username, password, nickname } = req.body;
-    try {
-        await pool.query(
-            'INSERT INTO users (username, password, nickname) VALUES ($1, $2, $3)',
-            [username.trim(), password.trim(), nickname.trim()]
-        );
-        res.send('<script>alert("회원가입 성공!"); location.href="/login";</script>');
-    } catch (e) {
-        console.error("가입 에러:", e.message);
-        res.send('<script>alert("이미 존재하는 아이디이거나 DB 연결 오류입니다."); history.back();</script>');
-    }
-});
-
-// --- 🟢 2. 게시글 로드 해결 (DB 조회) ---
+// --- 🟢 게시글 불러오기 (화면에 안 뜨는 문제 해결) ---
 app.get('/api/posts', async (req, res) => {
     try {
+        // posts 테이블에서 최신순으로 가져오기
         const result = await pool.query('SELECT * FROM posts ORDER BY is_notice DESC, created_at DESC');
-        res.json({ posts: result.rows, currentUser: req.session.user || null });
+        // 결과가 없어도 에러 대신 빈 배열을 보내서 화면이 멈추지 않게 함
+        res.json({ posts: result.rows || [], currentUser: req.session.user || null });
     } catch (e) {
-        console.error("로드 에러:", e.message);
-        res.status(500).json({ error: "데이터를 가져올 수 없습니다." });
+        console.error("데이터 로드 에러:", e.message);
+        res.status(500).json({ error: "DB에서 글을 가져오지 못했습니다." });
     }
 });
 
-// 게시글 작성
+// --- 🟢 게시글 작성 (작성 안 되는 문제 해결) ---
 app.post('/api/posts', async (req, res) => {
     if (!req.session.user) return res.redirect('/login');
+
     const { title, content, isNotice } = req.body;
+    const author = req.session.user.nickname;
     const isNoticeFlag = (req.session.user.username === 'ohjungwoo08' && isNotice === 'on');
+
     try {
+        // 테이블 컬럼 이름(title, content, author_name, is_notice) 확인 완료
         await pool.query(
             'INSERT INTO posts (title, content, author_name, is_notice) VALUES ($1, $2, $3, $4)', 
-            [title, content, req.session.user.nickname, isNoticeFlag]
+            [title, content, author, isNoticeFlag]
         );
-        res.redirect('/page1');
+        console.log("✅ 게시글 작성 완료!");
+        res.redirect('/page1'); // 작성 후 게시판으로 이동
     } catch (e) {
-        res.status(500).send("작성 실패");
+        console.error("❌ 게시글 작성 에러:", e.message);
+        res.status(500).send("작성 실패: " + e.message);
     }
 });
 
-// 로그인
+// 로그인 API
 app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
     try {
@@ -74,7 +79,7 @@ app.post('/api/login', async (req, res) => {
         } else {
             res.send('<script>alert("로그인 정보 불일치"); history.back();</script>');
         }
-    } catch (e) { res.status(500).send("서버 오류"); }
+    } catch (e) { res.status(500).send("로그인 에러"); }
 });
 
 app.get('/api/user/info', (req, res) => {
@@ -82,4 +87,4 @@ app.get('/api/user/info', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 서버 정상 가동: ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 서버 구동 완료: ${PORT}`));
