@@ -16,49 +16,54 @@ app.use(session({
 const connectionString = 'postgresql://neondb_owner:npg_2NLfAupgsz9C@ep-steep-resonance-a1p6ccy6-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require';
 const pool = new Pool({ connectionString, ssl: { rejectUnauthorized: false } });
 
-// 라우팅
+// 페이지 라우팅
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public.index.html')));
 app.get('/page1', (req, res) => res.sendFile(path.join(__dirname, 'public.page1.html')));
-app.get('/page2', (req, res) => res.sendFile(path.join(__dirname, 'public.page2.html')));
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public.login.html')));
 
-// --- 🟢 게시글 불러오기 API ---
+// --- 🟢 1. 회원가입 해결 (DB 저장) ---
+app.post('/api/register', async (req, res) => {
+    const { username, password, nickname } = req.body;
+    try {
+        await pool.query(
+            'INSERT INTO users (username, password, nickname) VALUES ($1, $2, $3)',
+            [username.trim(), password.trim(), nickname.trim()]
+        );
+        res.send('<script>alert("회원가입 성공!"); location.href="/login";</script>');
+    } catch (e) {
+        console.error("가입 에러:", e.message);
+        res.send('<script>alert("이미 존재하는 아이디이거나 DB 연결 오류입니다."); history.back();</script>');
+    }
+});
+
+// --- 🟢 2. 게시글 로드 해결 (DB 조회) ---
 app.get('/api/posts', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM posts ORDER BY is_notice DESC, created_at DESC');
         res.json({ posts: result.rows, currentUser: req.session.user || null });
     } catch (e) {
-        console.error("데이터 로드 실패:", e);
-        res.status(500).json({ error: "DB Error" });
+        console.error("로드 에러:", e.message);
+        res.status(500).json({ error: "데이터를 가져올 수 없습니다." });
     }
 });
 
-// --- 🟢 게시글 작성 API (가장 중요한 부분) ---
+// 게시글 작성
 app.post('/api/posts', async (req, res) => {
-    // 1. 세션 확인 (로그인 안 되어 있으면 로그인 페이지로)
     if (!req.session.user) return res.redirect('/login');
-
     const { title, content, isNotice } = req.body;
-    // 2. 공지사항 여부 체크 (소장님 계정일 때만)
     const isNoticeFlag = (req.session.user.username === 'ohjungwoo08' && isNotice === 'on');
-
     try {
-        // 3. DB에 데이터 삽입
         await pool.query(
             'INSERT INTO posts (title, content, author_name, is_notice) VALUES ($1, $2, $3, $4)', 
             [title, content, req.session.user.nickname, isNoticeFlag]
         );
-        
-        console.log("✅ 게시글 작성 성공!");
-        // 4. 작성이 완료되면 게시판 페이지(page1)로 다시 보냅니다.
-        res.redirect('/page1'); 
+        res.redirect('/page1');
     } catch (e) {
-        console.error("❌ 게시글 작성 실패:", e.message);
-        res.status(500).send(`<script>alert("작성에 실패했습니다: ${e.message}"); history.back();</script>`);
+        res.status(500).send("작성 실패");
     }
 });
 
-// --- 🟢 로그인 및 기타 API ---
+// 로그인
 app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
     try {
@@ -67,9 +72,9 @@ app.post('/api/login', async (req, res) => {
             req.session.user = result.rows[0];
             res.redirect('/');
         } else {
-            res.send('<script>alert("정보가 틀립니다."); history.back();</script>');
+            res.send('<script>alert("로그인 정보 불일치"); history.back();</script>');
         }
-    } catch (e) { res.status(500).send("로그인 에러"); }
+    } catch (e) { res.status(500).send("서버 오류"); }
 });
 
 app.get('/api/user/info', (req, res) => {
@@ -77,4 +82,4 @@ app.get('/api/user/info', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 서버 정상 작동 중: ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 서버 정상 가동: ${PORT}`));
