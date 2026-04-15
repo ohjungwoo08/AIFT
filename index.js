@@ -43,41 +43,47 @@ app.post('/api/posts', async (req, res) => {
         await pool.query('INSERT INTO posts (title, content, author_name, is_notice) VALUES ($1, $2, $3, $4)', 
             [title, content, req.session.user.nickname, isNoticeFlag]);
         res.redirect('/page1');
-    } catch (e) { res.status(500).send("작성 에러: " + e.message); }
+    } catch (e) { res.status(500).send("작성 에러"); }
 });
 
-// --- [ 🟢 게시판 수정 (추가됨!) ] ---
+// --- [ 🟢 게시판 수정: 관리자 프리패스 추가 ] ---
 app.put('/api/posts/:id', async (req, res) => {
-    if (!req.session.user) return res.status(401).send("로그인 필요");
+    if (!req.session.user) return res.status(401).send("Unauthorized");
     const { content } = req.body;
-    const postId = req.params.id;
-    try {
-        // 본인 글만 수정 가능하도록 author_name 체크
-        const result = await pool.query(
-            'UPDATE posts SET content = $1 WHERE id = $2 AND author_name = $3',
-            [content, postId, req.session.user.nickname]
-        );
-        if (result.rowCount > 0) res.sendStatus(200);
-        else res.status(403).send("수정 권한이 없습니다.");
-    } catch (e) { res.status(500).send("수정 에러"); }
-});
-
-// --- [ 🟢 게시판 삭제 (추가됨!) ] ---
-app.delete('/api/posts/:id', async (req, res) => {
-    if (!req.session.user) return res.status(401).send("로그인 필요");
     const isAdmin = (req.session.user.username === 'ohjungwoo08');
-    const postId = req.params.id;
     try {
         if (isAdmin) {
-            await pool.query('DELETE FROM posts WHERE id = $1', [postId]);
+            // 관리자는 무조건 수정 가능
+            await pool.query('UPDATE posts SET content = $1 WHERE id = $2', [content, req.params.id]);
         } else {
-            await pool.query('DELETE FROM posts WHERE id = $1 AND author_name = $2', [postId, req.session.user.nickname]);
+            // 일반 사용자는 본인 글만 수정 가능
+            const result = await pool.query('UPDATE posts SET content = $1 WHERE id = $2 AND author_name = $3',
+                [content, req.params.id, req.session.user.nickname]);
+            if (result.rowCount === 0) return res.status(403).send("권한 없음");
         }
         res.sendStatus(200);
-    } catch (e) { res.status(500).send("삭제 에러"); }
+    } catch (e) { res.status(500).send("수정 실패"); }
 });
 
-// [ 로그인 ]
+// --- [ 🟢 게시판 삭제: 관리자 프리패스 추가 ] ---
+app.delete('/api/posts/:id', async (req, res) => {
+    if (!req.session.user) return res.status(401).send("Unauthorized");
+    const isAdmin = (req.session.user.username === 'ohjungwoo08');
+    try {
+        if (isAdmin) {
+            // 관리자는 아이디만 맞으면 무조건 삭제 가능
+            await pool.query('DELETE FROM posts WHERE id = $1', [req.params.id]);
+        } else {
+            // 일반 사용자는 본인 닉네임이 일치해야 삭제 가능
+            const result = await pool.query('DELETE FROM posts WHERE id = $1 AND author_name = $2', 
+                [req.params.id, req.session.user.nickname]);
+            if (result.rowCount === 0) return res.status(403).send("권한 없음");
+        }
+        res.sendStatus(200);
+    } catch (e) { res.status(500).send("삭제 실패"); }
+});
+
+// --- [ 로그인 ] ---
 app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
     try {
@@ -90,4 +96,4 @@ app.post('/api/login', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 서버 구동 중: ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 소장님 전용 서버 가동: ${PORT}`));
