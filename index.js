@@ -23,7 +23,7 @@ app.get('/page1', (req, res) => res.sendFile(path.join(__dirname, 'public.page1.
 app.get('/page2', (req, res) => res.sendFile(path.join(__dirname, 'public.page2.html')));
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public.login.html')));
 
-// --- [ 🟢 사용자 정보 확인 API (메인 화면 아이디 표시용) ] ---
+// --- [ 🟢 사용자 정보 확인 API (이 부분이 닉네임 표시의 핵심!) ] ---
 app.get('/api/userinfo', (req, res) => {
     if (req.session.user) {
         res.json({ loggedIn: true, user: req.session.user });
