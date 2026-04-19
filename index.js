@@ -23,6 +23,46 @@ app.get('/page1', (req, res) => res.sendFile(path.join(__dirname, 'public.page1.
 app.get('/page2', (req, res) => res.sendFile(path.join(__dirname, 'public.page2.html')));
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public.login.html')));
 
+// --- [ 🟢 회원가입 API (새로 추가됨!) ] ---
+app.post('/api/register', async (req, res) => {
+    const { username, password, nickname } = req.body;
+    
+    if (!username || !password || !nickname) {
+        return res.send('<script>alert("모든 항목을 입력해주세요."); history.back();</script>');
+    }
+
+    try {
+        // 아이디 중복 확인
+        const checkUser = await pool.query('SELECT * FROM users WHERE username = $1', [username.trim()]);
+        if (checkUser.rows.length > 0) {
+            return res.send('<script>alert("이미 사용 중인 아이디입니다."); history.back();</script>');
+        }
+
+        // DB에 유저 정보 저장
+        await pool.query(
+            'INSERT INTO users (username, password, nickname) VALUES ($1, $2, $3)',
+            [username.trim(), password.trim(), nickname.trim()]
+        );
+
+        res.send('<script>alert("회원가입 성공! 로그인해 주세요."); location.href="/login";</script>');
+    } catch (e) {
+        console.error("회원가입 에러:", e.message);
+        res.status(500).send("회원가입 중 서버 오류가 발생했습니다.");
+    }
+});
+
+// --- [ 🟢 로그인 ] ---
+app.post('/api/login', async (req, res) => {
+    const { username, password } = req.body;
+    try {
+        const result = await pool.query('SELECT * FROM users WHERE username = $1 AND password = $2', [username.trim(), password.trim()]);
+        if (result.rows.length > 0) {
+            req.session.user = result.rows[0];
+            res.redirect('/');
+        } else { res.send('<script>alert("아이디 또는 비밀번호가 틀렸습니다."); history.back();</script>'); }
+    } catch (e) { res.status(500).send("로그인 에러"); }
+});
+
 // --- [ 🟢 게시판 로드 ] ---
 app.get('/api/posts', async (req, res) => {
     try {
@@ -46,17 +86,15 @@ app.post('/api/posts', async (req, res) => {
     } catch (e) { res.status(500).send("작성 에러"); }
 });
 
-// --- [ 🟢 게시판 수정: 관리자 프리패스 추가 ] ---
+// --- [ 🟢 게시판 수정 ] ---
 app.put('/api/posts/:id', async (req, res) => {
     if (!req.session.user) return res.status(401).send("Unauthorized");
     const { content } = req.body;
     const isAdmin = (req.session.user.username === 'ohjungwoo08');
     try {
         if (isAdmin) {
-            // 관리자는 무조건 수정 가능
             await pool.query('UPDATE posts SET content = $1 WHERE id = $2', [content, req.params.id]);
         } else {
-            // 일반 사용자는 본인 글만 수정 가능
             const result = await pool.query('UPDATE posts SET content = $1 WHERE id = $2 AND author_name = $3',
                 [content, req.params.id, req.session.user.nickname]);
             if (result.rowCount === 0) return res.status(403).send("권한 없음");
@@ -65,34 +103,20 @@ app.put('/api/posts/:id', async (req, res) => {
     } catch (e) { res.status(500).send("수정 실패"); }
 });
 
-// --- [ 🟢 게시판 삭제: 관리자 프리패스 추가 ] ---
+// --- [ 🟢 게시판 삭제 ] ---
 app.delete('/api/posts/:id', async (req, res) => {
     if (!req.session.user) return res.status(401).send("Unauthorized");
     const isAdmin = (req.session.user.username === 'ohjungwoo08');
     try {
         if (isAdmin) {
-            // 관리자는 아이디만 맞으면 무조건 삭제 가능
             await pool.query('DELETE FROM posts WHERE id = $1', [req.params.id]);
         } else {
-            // 일반 사용자는 본인 닉네임이 일치해야 삭제 가능
             const result = await pool.query('DELETE FROM posts WHERE id = $1 AND author_name = $2', 
                 [req.params.id, req.session.user.nickname]);
             if (result.rowCount === 0) return res.status(403).send("권한 없음");
         }
         res.sendStatus(200);
     } catch (e) { res.status(500).send("삭제 실패"); }
-});
-
-// --- [ 로그인 ] ---
-app.post('/api/login', async (req, res) => {
-    const { username, password } = req.body;
-    try {
-        const result = await pool.query('SELECT * FROM users WHERE username = $1 AND password = $2', [username.trim(), password.trim()]);
-        if (result.rows.length > 0) {
-            req.session.user = result.rows[0];
-            res.redirect('/');
-        } else { res.send('<script>alert("불일치"); history.back();</script>'); }
-    } catch (e) { res.status(500).send("로그인 에러"); }
 });
 
 const PORT = process.env.PORT || 3000;
