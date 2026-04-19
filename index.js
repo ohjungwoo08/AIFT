@@ -23,35 +23,41 @@ app.get('/page1', (req, res) => res.sendFile(path.join(__dirname, 'public.page1.
 app.get('/page2', (req, res) => res.sendFile(path.join(__dirname, 'public.page2.html')));
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public.login.html')));
 
-// --- [ 🟢 회원가입 API (새로 추가됨!) ] ---
+// --- [ 🟢 사용자 정보 확인 API (메인 화면 아이디 표시용) ] ---
+app.get('/api/userinfo', (req, res) => {
+    if (req.session.user) {
+        res.json({ loggedIn: true, user: req.session.user });
+    } else {
+        res.json({ loggedIn: false });
+    }
+});
+
+// --- [ 🟢 로그아웃 API ] ---
+app.get('/api/logout', (req, res) => {
+    req.session.destroy();
+    res.send('<script>alert("로그아웃 되었습니다."); location.href="/";</script>');
+});
+
+// --- [ 🟢 회원가입 API ] ---
 app.post('/api/register', async (req, res) => {
     const { username, password, nickname } = req.body;
-    
     if (!username || !password || !nickname) {
         return res.send('<script>alert("모든 항목을 입력해주세요."); history.back();</script>');
     }
-
     try {
-        // 아이디 중복 확인
         const checkUser = await pool.query('SELECT * FROM users WHERE username = $1', [username.trim()]);
         if (checkUser.rows.length > 0) {
             return res.send('<script>alert("이미 사용 중인 아이디입니다."); history.back();</script>');
         }
-
-        // DB에 유저 정보 저장
-        await pool.query(
-            'INSERT INTO users (username, password, nickname) VALUES ($1, $2, $3)',
-            [username.trim(), password.trim(), nickname.trim()]
-        );
-
+        await pool.query('INSERT INTO users (username, password, nickname) VALUES ($1, $2, $3)',
+            [username.trim(), password.trim(), nickname.trim()]);
         res.send('<script>alert("회원가입 성공! 로그인해 주세요."); location.href="/login";</script>');
     } catch (e) {
-        console.error("회원가입 에러:", e.message);
-        res.status(500).send("회원가입 중 서버 오류가 발생했습니다.");
+        res.status(500).send("회원가입 중 서버 오류");
     }
 });
 
-// --- [ 🟢 로그인 ] ---
+// --- [ 🟢 로그인 API ] ---
 app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
     try {
@@ -63,17 +69,15 @@ app.post('/api/login', async (req, res) => {
     } catch (e) { res.status(500).send("로그인 에러"); }
 });
 
-// --- [ 🟢 게시판 로드 ] ---
+// --- [ 🟢 게시판 로드 API ] ---
 app.get('/api/posts', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM posts ORDER BY is_notice DESC, created_at DESC');
         res.json({ posts: result.rows || [], currentUser: req.session.user || null });
-    } catch (e) {
-        res.status(500).json({ posts: [], error: e.message });
-    }
+    } catch (e) { res.status(500).json({ posts: [], error: e.message }); }
 });
 
-// --- [ 🟢 게시판 작성 ] ---
+// --- [ 🟢 게시판 작성 API ] ---
 app.post('/api/posts', async (req, res) => {
     if (!req.session.user) return res.send('<script>alert("로그인이 필요합니다."); location.href="/login";</script>');
     const { title, content, isNotice } = req.body;
@@ -86,7 +90,7 @@ app.post('/api/posts', async (req, res) => {
     } catch (e) { res.status(500).send("작성 에러"); }
 });
 
-// --- [ 🟢 게시판 수정 ] ---
+// --- [ 🟢 게시판 수정 API ] ---
 app.put('/api/posts/:id', async (req, res) => {
     if (!req.session.user) return res.status(401).send("Unauthorized");
     const { content } = req.body;
@@ -103,7 +107,7 @@ app.put('/api/posts/:id', async (req, res) => {
     } catch (e) { res.status(500).send("수정 실패"); }
 });
 
-// --- [ 🟢 게시판 삭제 ] ---
+// --- [ 🟢 게시판 삭제 API ] ---
 app.delete('/api/posts/:id', async (req, res) => {
     if (!req.session.user) return res.status(401).send("Unauthorized");
     const isAdmin = (req.session.user.username === 'ohjungwoo08');
