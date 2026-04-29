@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🧪 오정우 연구실</title>
+    <title>🧪 오정우 연구실 | OJW Laboratory</title>
     <style>
         :root {
-            --bg-start: #2ecc71;
-            --bg-end: #a1ffce;
+            --bg-start: #1e8449;
+            --bg-end: #abebc6;
             --green-main: #27ae60;
-            --green-dark: #1e8449;
+            --green-dark: #196f3d;
+            --accent-color: #f1c40f;
+            --glass-bg: rgba(255, 255, 255, 0.9);
         }
 
         body {
@@ -17,146 +19,180 @@
             font-family: 'Pretendard', 'Malgun Gothic', sans-serif;
             display: flex; align-items: center; justify-content: center;
             min-height: 100vh; margin: 0; position: relative;
+            overflow: hidden; /* 배경 애니메이션을 위해 설정 */
         }
 
-        body::before {
-            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        /* ✨ 생동감 넘치는 움직이는 배경 */
+        .bg-pattern {
+            position: absolute; top: 0; left: 0; width: 200%; height: 200%;
             background-image: url('https://img.freepik.com/premium-vector/seamless-pattern-with-chemical-elements-and-laboratory-equipment-vector-flat-illustration-isolated-on-white-background_151139-242.jpg?w=1480');
-            background-repeat: repeat; background-size: 300px; opacity: 0.08; z-index: -1;
+            background-repeat: repeat; background-size: 350px; opacity: 0.06;
+            animation: moveBg 100s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes moveBg {
+            from { transform: translate(0, 0); }
+            to { transform: translate(-50%, -50%); }
         }
 
         .card {
-            background: white; 
-            padding: 50px 30px; 
-            border-radius: 25px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px); /* 유리 질감 효과 */
+            padding: 60px 40px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
             width: 100%;
-            max-width: 380px;
+            max-width: 420px;
             text-align: center;
-            box-sizing: border-box;
+            position: relative;
             z-index: 1;
+            transition: transform 0.3s ease;
         }
 
-        h1 { 
-            color: var(--green-main); 
-            margin: 0 0 10px 0; 
-            font-size: 32px; 
-            letter-spacing: -1px;
+        h1 {
+            color: var(--green-dark);
+            margin: 0 0 5px 0;
+            font-size: 36px;
+            letter-spacing: -1.5px;
+            font-weight: 900;
         }
 
-        .sub-title { 
-            color: var(--green-dark); 
-            font-weight: 800; 
-            font-size: 15px; 
-            margin-bottom: 40px; 
-            line-height: 1.5;
+        .lab-tag {
+            background: var(--green-main);
+            color: white;
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .sub-title {
+            color: #444;
+            font-weight: 500;
+            font-size: 16px;
+            margin-bottom: 45px;
+            line-height: 1.6;
             word-break: keep-all;
         }
 
-        .btn-group { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 12px;
+        .btn-group {
+            display: flex; flex-direction: column; gap: 15px;
         }
-        
+
         .btn {
-            display: block;
-            width: 100%;
-            padding: 16px 0;
-            font-size: 16px; 
-            font-weight: bold;
-            border-radius: 12px; 
-            border: none; 
-            cursor: pointer;
-            transition: 0.2s; 
-            text-decoration: none;
-            box-sizing: border-box;
+            display: flex; align-items: center; justify-content: center;
+            width: 100%; padding: 18px 0;
+            font-size: 17px; font-weight: 700;
+            border-radius: 15px; border: none; cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-decoration: none; box-sizing: border-box;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
 
-        .btn-materials { 
-            background: var(--green-main); 
-            color: white; 
+        .btn-materials {
+            background: var(--green-main); color: white;
         }
-        .btn-materials:hover { opacity: 0.9; transform: translateY(-2px); }
+        .btn-materials:hover {
+            background: var(--green-dark); transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(39, 174, 96, 0.3);
+        }
 
-        .btn-qna { 
-            background: #f0fdf4; 
-            color: var(--green-main); 
-            border: 2px solid var(--green-main); 
+        .btn-qna {
+            background: white; color: var(--green-main);
+            border: 2px solid var(--green-main);
         }
-        .btn-qna:hover { background: #e8f9ed; transform: translateY(-2px); }
+        .btn-qna:hover {
+            background: #f0fdf4; transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        }
 
         .login-link {
-            margin-top: 30px; 
-            display: inline-block;
-            color: #bbb; 
-            font-size: 13px; 
-            text-decoration: none;
-            transition: 0.2s;
+            margin-top: 35px; display: inline-block;
+            color: #888; font-size: 14px; text-decoration: none;
+            border-bottom: 1px solid transparent; transition: 0.2s;
         }
-        .login-link:hover { color: var(--green-main); }
+        .login-link:hover { color: var(--green-dark); border-bottom-color: var(--green-dark); }
 
-        /* 우측 상단 유저 정보 스타일 */
+        /* 🏷️ 우측 상단 유저 정보 */
         #top-right-auth {
-            position: absolute; 
-            top: 20px; 
-            right: 20px; 
-            padding: 10px 15px; 
-            background-color: rgba(255, 255, 255, 0.9); 
-            border: 1px solid #ddd; 
-            border-radius: 20px; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            font-size: 14px;
-            z-index: 1000;
+            position: absolute; top: 20px; right: 20px;
+            padding: 8px 16px; background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(5px); border-radius: 50px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            font-size: 14px; z-index: 1000;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        /* 🎮 플로팅 미니게임 버튼 */
+        .floating-game {
+            position: absolute; bottom: 30px; right: 30px;
+            width: 60px; height: 60px; background: var(--accent-color);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            text-decoration: none; font-size: 28px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            z-index: 1000; transition: 0.3s;
+            animation: bounce 2s infinite;
+        }
+        .floating-game:hover { transform: scale(1.1) rotate(15deg); }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
     </style>
 </head>
 <body>
 
+    <div class="bg-pattern"></div>
+
     <div id="top-right-auth">
-        <span id="user-status-text">확인 중...</span>
+        <span id="user-status-text">연결 확인 중...</span>
     </div>
 
     <div class="card">
+        <div class="lab-tag">Experimental Lab</div>
         <h1>오정우 연구실</h1>
         
         <div class="sub-title">
-            화학 및 기타 자료들과 상시 질문게시판이 구비된 오정우 연구실
+            최첨단 화학 공학 및 고등 교육 자료가 집약된<br>오정우 연구실의 통합 허브입니다.
         </div>
         
         <div class="btn-group">
-            <a href="/page2" class="btn btn-materials">📂 화학 및 기타 학습자료</a>
-            <a href="/page1" class="btn btn-qna">💬 질문 게시판 바로가기</a>
+            <a href="/page2" class="btn btn-materials">📂 학술 자료 보관소</a>
+            <a href="/page1" class="btn btn-qna">💬 연구 Q&A 게시판</a>
         </div>
 
-        <a href="/login" class="login-link" id="bottom-login-btn">🔑 로그인 / 회원가입</a>
+        <a href="/login" class="login-link" id="bottom-login-btn">🔐 시스템 로그인 / 보안 인증</a>
     </div>
+
+    <!-- 🎮 미니게임 바로가기 (주소는 소장님 리플릿 주소로 연결하세요!) -->
+    <a href="#" class="floating-game" title="화학런 게임하기">🧪</a>
 
     <script>
         async function fetchTopUserInfo() {
             const statusText = document.getElementById('user-status-text');
             const bottomLoginBtn = document.getElementById('bottom-login-btn');
             try {
-                // [수정 포인트] 서버 API 주소와 일치하도록 변경 (/api/userinfo)
                 const response = await fetch('/api/userinfo');
                 const data = await response.json();
 
-                if (data.loggedIn) { // [수정 포인트] 서버 응답 필드명(loggedIn) 일치
-                    // 로그인 상태 표시
+                if (data.loggedIn) {
                     statusText.innerHTML = `
-                        <span style="color: #2c3e50; font-weight: bold;">👤 ${data.user.nickname}</span>
+                        <span style="color: #2c3e50; font-weight: bold;">👤 ${data.user.nickname} 연구원</span>
                         <a href="/api/logout" style="margin-left:8px; color:#e74c3c; text-decoration:none; font-size:12px;">[로그아웃]</a>
                     `;
-                    // 하단 로그인 링크 숨기기 (선택 사항)
                     if(bottomLoginBtn) bottomLoginBtn.style.display = 'none';
                 } else {
-                    // 로그아웃 상태 표시
                     statusText.innerHTML = `
-                        <a href="/login" style="text-decoration:none; color:#666; font-weight:bold;">로그인하세요</a>
+                        <a href="/login" style="text-decoration:none; color:#666; font-weight:bold;">접근 권한 필요</a>
                     `;
                 }
             } catch (error) {
-                statusText.innerText = "연결 오류";
+                statusText.innerText = "서버 연결 오류";
             }
         }
 
