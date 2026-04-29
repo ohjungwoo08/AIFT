@@ -70,6 +70,7 @@
             letter-spacing: 1px;
         }
 
+        /* 📝 요청하신 문구 반영 섹션 */
         .sub-title {
             color: #444;
             font-weight: 500;
@@ -141,15 +142,15 @@
         <h1>오정우 연구실</h1>
         
         <div class="sub-title">
-            화학 공학의 미래와 교육적 가치를 탐구하는<br>오정우 소장의 통합 연구 데이터베이스입니다.
+            화학 및 여러 교육의 미래 가치를 탐구하는 출발점<br>오정우 연구실
         </div>
         
         <div class="btn-group">
-            <a href="/page2" class="btn btn-materials">📂 학술 자료 보관소</a>
+            <a href="/page2" class="btn btn-materials">📂 학습 자료 보관소</a>
             <a href="/page1" class="btn btn-qna">💬 연구 Q&A 게시판</a>
         </div>
 
-        <a href="/login" class="login-link" id="bottom-login-btn">🔐 시스템 로그인 / 보안 인증</a>
+        <a href="/login" class="login-link" id="bottom-login-btn">🔐 로그인 / 회원가입</a>
     </div>
 
     <script>
@@ -157,13 +158,12 @@
             const statusText = document.getElementById('user-status-text');
             const bottomLoginBtn = document.getElementById('bottom-login-btn');
             try {
-                // 실제 서버 API 엔드포인트에 맞춰 동작
                 const response = await fetch('/api/userinfo');
                 const data = await response.json();
 
                 if (data.loggedIn) {
                     statusText.innerHTML = `
-                        <span style="color: #2c3e50; font-weight: bold;">👤 ${data.user.nickname} 연구원</span>
+                        <span style="color: #2c3e50; font-weight: bold;">👤 ${data.user.nickname} </span>
                         <a href="/api/logout" style="margin-left:10px; color:#e74c3c; text-decoration:none; font-size:12px; font-weight:bold;">로그아웃</a>
                     `;
                     if(bottomLoginBtn) bottomLoginBtn.style.display = 'none';
