@@ -7,6 +7,11 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// --- [ 🟢 정적 파일 서비스 설정 ] ---
+// 파일명이 'public.page1.html'이더라도 서버가 파일을 찾을 수 있도록 루트와 public을 모두 개방합니다.
+app.use(express.static(path.join(__dirname)));
+app.use(express.static(path.join(__dirname, 'public')));
+
 app.use(session({
     secret: 'aift-secure-key-2026',
     resave: false,
@@ -17,13 +22,14 @@ app.use(session({
 const connectionString = 'postgresql://neondb_owner:npg_2NLfAupgsz9C@ep-steep-resonance-a1p6ccy6-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require';
 const pool = new Pool({ connectionString, ssl: { rejectUnauthorized: false } });
 
-// --- [ 페이지 연결 ] ---
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public.index.html')));
-app.get('/page1', (req, res) => res.sendFile(path.join(__dirname, 'public.page1.html')));
-app.get('/page2', (req, res) => res.sendFile(path.join(__dirname, 'public.page2.html')));
-app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public.login.html')));
+// --- [ 페이지 연결: 파일명 구조에 맞게 최적화 ] ---
+// path.resolve를 사용하여 'public.page1.html'이라는 이름을 가진 파일을 정확히 지목합니다.
+app.get('/', (req, res) => res.sendFile(path.resolve(__dirname, 'public.index.html')));
+app.get('/page1', (req, res) => res.sendFile(path.resolve(__dirname, 'public.page1.html')));
+app.get('/page2', (req, res) => res.sendFile(path.resolve(__dirname, 'public.page2.html')));
+app.get('/login', (req, res) => res.sendFile(path.resolve(__dirname, 'public.login.html')));
 
-// --- [ 🟢 사용자 정보 확인 API (이 부분이 닉네임 표시의 핵심!) ] ---
+// --- [ 🟢 사용자 정보 확인 API ] ---
 app.get('/api/userinfo', (req, res) => {
     if (req.session.user) {
         res.json({ loggedIn: true, user: req.session.user });
