@@ -28,8 +28,10 @@ app.get('/', (req, res) => res.sendFile(path.resolve(__dirname, 'public.index.ht
 app.get('/page1', (req, res) => res.sendFile(path.resolve(__dirname, 'public.page1.html')));
 app.get('/page2', (req, res) => res.sendFile(path.resolve(__dirname, 'public.page2.html')));
 app.get('/login', (req, res) => res.sendFile(path.resolve(__dirname, 'public.login.html')));
+// 🎮 새로 추가된 미니게임 연결
+app.get('/game', (req, res) => res.sendFile(path.resolve(__dirname, 'public.game.html')));
 
-// --- [ 🟢 사용자 정보 확인 API ] ---
+// --- [ 🟢 사용자 정보 확인 API (이 부분이 닉네임 표시의 핵심!) ] ---
 app.get('/api/userinfo', (req, res) => {
     if (req.session.user) {
         res.json({ loggedIn: true, user: req.session.user });
