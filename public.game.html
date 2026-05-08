@@ -1,1 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>OJW 화학 런 - 젤리 월드</title>
+    <style>
+        body { margin: 0; padding: 0; background: #222; overflow: hidden; touch-action: manipulation; font-family: sans-serif; }
+        #game-container { position: relative; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; }
+        canvas { background: #f0f4f7; border: 3px solid #1a3a5a; width: 95%; max-width: 600px; border-radius: 10px; }
+        #msg { position: absolute; color: #1a3a5a; top: 15%; text-align: center; pointer-events: none; font-weight: bold; }
+    </style>
+</head>
+<body onclick="handleInteraction()">
+    <div id="game-container">
+        <div id="msg">점프 반경 UP! 젤리를 많이 모으세요!</div>
+        <canvas id="c" width="400" height="200"></canvas>
+    </div>
 
+    <script>
+        const canvas = document.getElementById('c');
+        const ctx = canvas.getContext('2d');
+        const msg = document.getElementById('msg');
+
+        let x = 30, y = 140, dy = 0;
+        let score = 0;
+        let obsX = 500;
+        let gameState = 'playing';
+        let speed = 3;
+
+        // 젤리 개수를 더 많이 배치 (5개로 증가)
+        let jellies = [];
+        for(let i=0; i<5; i++) {
+            jellies.push({ x: 400 + (i * 100), y: 60 + Math.random()*80, active: true });
+        }
+
+        function handleInteraction() {
+            if (gameState === 'playing') {
+                // 점프 반경을 넓히기 위해 점프 힘을 9 -> 11로 강화
+                if (y >= 140) dy = -11; 
+            } else if (gameState === 'over') {
+                resetGame();
+            }
+        }
+
+        function resetGame() {
+            x = 30; y = 140; dy = 0; score = 0;
+            obsX = 500;
+            jellies.forEach((j, i) => { 
+                j.x = 400 + (i * 100); 
+                j.active = true; 
+            });
+            gameState = 'playing';
+            msg.innerHTML = "점프 반경 UP! 젤리를 많이 모으세요!";
+            loop();
+        }
+
+        function drawPlayer(px, py) {
+            const centerX = px + 15;
+            const centerY = py + 15;
+            ctx.strokeStyle = "#1a3a5a";
+            ctx.lineWidth = 1.5;
+            // 로고 원자 궤도
+            ctx.beginPath(); ctx.ellipse(centerX, centerY, 15, 6, Math.PI / 4, 0, Math.PI * 2); ctx.stroke();
+            ctx.beginPath(); ctx.ellipse(centerX, centerY, 15, 6, -Math.PI / 4, 0, Math.PI * 2); ctx.stroke();
+            // 중심 핵
+            ctx.fillStyle = "#1a3a5a";
+            ctx.beginPath(); ctx.arc(centerX, centerY, 4, 0, Math.PI * 2); ctx.fill();
+            // 전자
+            ctx.beginPath(); ctx.arc(centerX + 10, centerY - 5, 2, 0, 7); ctx.fill();
+            ctx.beginPath(); ctx.arc(centerX - 10, centerY + 5, 2, 0, 7); ctx.fill();
+        }
+
+        function loop() {
+            if (gameState === 'over') return;
+            requestAnimationFrame(loop);
+            ctx.clearRect(0, 0, 400, 200);
+            
+            ctx.fillStyle = "#1a3a5a";
+            ctx.fillRect(0, 170, 400, 30);
+
+            // 중력 (반경이 넓어지도록 살짝 조정)
+            dy += 0.5;
+            y += dy;
+            if (y > 140) y = 140; 
+            
+            drawPlayer(x, y);
+
+            // 젤리 로직
+            jellies.forEach(j => {
+                j.x -= speed;
+                if (j.active) {
+                    ctx.fillStyle = "#FF69B4"; // 분홍색 젤리
+                    ctx.beginPath(); ctx.arc(j.x, j.y, 6, 0, Math.PI * 2); ctx.fill();
+                    
+                    // 충돌 범위 확대 (먹기 쉽게)
+                    let dist = Math.hypot((x+15) - j.x, (y+15) - j.y);
+                    if (dist < 25) {
+                        j.active = false;
+                        score += 1; // 젤리 1점
+                    }
+                }
+                if (j.x < -20) {
+                    j.x = 450 + Math.random() * 100;
+                    j.y = 50 + Math.random() * 90;
+                    j.active = true;
+                }
+            });
+
+            // 장애물
+            obsX -= speed;
+            if (obsX < -20) {
+                obsX = 450 + Math.random() * 200;
+                // 장애물 통과 점수 제거 (score 증가 없음)
+            }
+            ctx.fillStyle = "#FF4500";
+            ctx.fillRect(obsX, 150, 20, 20);
+
+            // 충돌 감지
+            if (obsX < x + 25 && obsX + 20 > x && y > 125) {
+                gameState = 'over';
+                msg.innerHTML = "<h1 style='color:#1a3a5a'>실험 종료</h1><p>획득 젤리: " + score + "</p><p>터치해서 재도전!</p>";
+                return;
+            }
+
+            // 점수 표시
+            ctx.fillStyle = "#1a3a5a";
+            ctx.font = "bold 16px sans-serif";
+            ctx.fillText("Jelly: " + score, 15, 25);
+        }
+
+        loop();
+    </script>
+</body>
+</html>
