@@ -9,36 +9,37 @@
         #game-container { position: relative; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; }
         canvas { background: #f0f4f7; border: 3px solid #1a3a5a; width: 95%; max-width: 600px; border-radius: 10px; display: block; }
         
-        /* ✉️ UI 레이어: 시작/종료 화면 */
+        /* ✉️ UI 레이어: 시작 및 종료 화면 */
         #ui-layer { 
             position: absolute; 
             top: 0; left: 0; width: 100%; height: 100%; 
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 100; background: rgba(0,0,0,0.5); /* 배경을 살짝 어둡게 해서 집중도 향상 */
+            z-index: 100; background: rgba(0,0,0,0.7); /* 배경을 조금 더 어둡게 */
         }
         #msg-box { 
             background: white; 
-            padding: 30px; 
-            border-radius: 20px; 
+            padding: 40px; 
+            border-radius: 25px; 
             text-align: center; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            min-width: 250px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            min-width: 280px;
         }
-        #user-welcome { color: #1a3a5a; margin-bottom: 20px; }
+        #user-welcome { color: #1a3a5a; margin-bottom: 25px; min-height: 50px; }
         .start-btn {
-            padding: 15px 40px; background: #27ae60; color: white;
-            border: none; border-radius: 50px; font-weight: bold; cursor: pointer; font-size: 18px;
-            transition: transform 0.2s;
+            padding: 15px 50px; background: #27ae60; color: white;
+            border: none; border-radius: 50px; font-weight: bold; cursor: pointer; font-size: 20px;
+            box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3);
         }
-        .start-btn:hover { transform: scale(1.05); background: #1e8449; }
     </style>
 </head>
 <body>
     <div id="game-container">
         <div id="ui-layer">
             <div id="msg-box">
-                <div id="user-welcome">데이터 동기화 중...</div>
-                <button class="start-btn" id="start-button" onclick="startGame()">실험 시작</button>
+                <div id="user-welcome">
+                    <p style="color:#666;">연구실 데이터 동기화 중...</p>
+                </div>
+                <button class="start-btn" id="start-button" onclick="startGame()" style="display:none;">실험 시작</button>
             </div>
         </div>
         <canvas id="c" width="400" height="200"></canvas>
@@ -58,43 +59,58 @@
         let speed = 3;
         let userName = "연구원";
 
-        // 젤리 설정 (기존 소장님 코드 유지)
         let jellies = [];
         for(let i=0; i<5; i++) {
             jellies.push({ x: 400 + (i * 100), y: 60 + Math.random()*80, active: true });
         }
 
-        // 🔐 사용자 정보 가져오기
-        async function fetchUserInfo() {
+        // 🔐 핵심: 사용자 정보 로딩 후 버튼 표시
+        async function initGame() {
             try {
+                console.log("사용자 정보 가져오는 중...");
                 const response = await fetch('/api/userinfo');
+                
+                if (!response.ok) throw new Error('네트워크 응답 에러');
+                
                 const data = await response.json();
-                if (data.loggedIn) {
-                    userName = data.user.nickname;
-                    userWelcome.innerHTML = `<h2 style="margin:0; color:#196f3d;">🧪 ${userName} 소장님</h2><p>실험 준비가 완료되었습니다.</p>`;
+                console.log("수신 데이터:", data);
+
+                if (data.loggedIn && data.user) {
+                    userName = data.user.nickname || "연구원";
+                    userWelcome.innerHTML = `
+                        <h2 style="margin:0; color:#196f3d;">🧪 ${userName} 소장님</h2>
+                        <p style="margin-top:10px; color:#444;">실험 데이터 연동 완료</p>
+                    `;
                 } else {
-                    userWelcome.innerHTML = `<h2 style="margin:0;">미확인 연구원</h2><p>로그인 후 기록을 저장하세요.</p>`;
+                    userWelcome.innerHTML = `
+                        <h2 style="margin:0; color:#c0392b;">미확인 연구원</h2>
+                        <p style="margin-top:10px; color:#666;">기록이 저장되지 않는 모드입니다.</p>
+                    `;
                 }
             } catch (e) {
-                userWelcome.innerHTML = `<h2>오프라인 모드</h2><p>로컬 환경에서 실행 중입니다.</p>`;
+                console.error("로그인 정보 로드 실패:", e);
+                userWelcome.innerHTML = `
+                    <h2 style="margin:0; color:#7f8c8d;">게스트 모드</h2>
+                    <p style="margin-top:10px; color:#95a5a6;">서버 연결 없이 진행합니다.</p>
+                `;
+            } finally {
+                // 정보 로드가 끝나면 (성공이든 실패든) 시작 버튼을 보여줌
+                startBtn.style.display = 'inline-block';
             }
         }
 
-        // 게임 시작 함수
         function startGame() {
-            uiLayer.style.display = 'none'; // UI 레이어 숨김
+            uiLayer.style.display = 'none';
             gameState = 'playing';
-            loop(); // 게임 루프 시작
+            loop();
         }
 
-        // 인터랙션 (점프)
         function handleInteraction() {
             if (gameState === 'playing' && y >= 140) {
                 dy = -11; 
             }
         }
 
-        // 클릭 및 터치 이벤트 (버튼 제외하고 작동)
         window.addEventListener('mousedown', (e) => {
             if(gameState === 'playing') handleInteraction();
         });
@@ -106,4 +122,82 @@
             x = 30; y = 140; dy = 0; score = 0;
             obsX = 500;
             jellies.forEach((j, i) => { 
-                j.x = 4
+                j.x = 400 + (i * 100); 
+                j.active = true; 
+            });
+            startGame();
+        }
+
+        function drawPlayer(px, py) {
+            const centerX = px + 15;
+            const centerY = py + 15;
+            ctx.strokeStyle = "#1a3a5a";
+            ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.ellipse(centerX, centerY, 15, 6, Math.PI / 4, 0, Math.PI * 2); ctx.stroke();
+            ctx.beginPath(); ctx.ellipse(centerX, centerY, 15, 6, -Math.PI / 4, 0, Math.PI * 2); ctx.stroke();
+            ctx.fillStyle = "#1a3a5a";
+            ctx.beginPath(); ctx.arc(centerX, centerY, 4, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(centerX + 10, centerY - 5, 2, 0, 7); ctx.fill();
+            ctx.beginPath(); ctx.arc(centerX - 10, centerY + 5, 2, 0, 7); ctx.fill();
+        }
+
+        function loop() {
+            if (gameState !== 'playing') return;
+            requestAnimationFrame(loop);
+            ctx.clearRect(0, 0, 400, 200);
+            
+            ctx.fillStyle = "#1a3a5a";
+            ctx.fillRect(0, 170, 400, 30);
+
+            dy += 0.5;
+            y += dy;
+            if (y > 140) y = 140; 
+            
+            drawPlayer(x, y);
+
+            jellies.forEach(j => {
+                j.x -= speed;
+                if (j.active) {
+                    ctx.fillStyle = "#FF69B4";
+                    ctx.beginPath(); ctx.arc(j.x, j.y, 6, 0, Math.PI * 2); ctx.fill();
+                    let dist = Math.hypot((x+15) - j.x, (y+15) - j.y);
+                    if (dist < 25) {
+                        j.active = false;
+                        score += 1;
+                    }
+                }
+                if (j.x < -20) {
+                    j.x = 450 + Math.random() * 100;
+                    j.y = 50 + Math.random() * 90;
+                    j.active = true;
+                }
+            });
+
+            obsX -= speed;
+            if (obsX < -20) {
+                obsX = 450 + Math.random() * 200;
+            }
+            ctx.fillStyle = "#FF4500";
+            ctx.fillRect(obsX, 150, 20, 20);
+
+            if (obsX < x + 25 && obsX + 20 > x && y > 125) {
+                gameState = 'over';
+                uiLayer.style.display = 'flex';
+                document.getElementById('msg-box').innerHTML = `
+                    <h1 style='color:#1a3a5a; margin-top:0;'>실험 종료</h1>
+                    <p>${userName} 소장님의 성적: <b>${score}</b> 젤리</p>
+                    <button class="start-btn" onclick="resetGame()">다시 실험하기</button>
+                `;
+                return;
+            }
+
+            ctx.fillStyle = "#1a3a5a";
+            ctx.font = "bold 14px sans-serif";
+            ctx.fillText(`${userName}: ${score} Jelly`, 10, 20);
+        }
+
+        // 페이지 로드 시 초기화 함수 실행
+        initGame();
+    </script>
+</body>
+</html>
