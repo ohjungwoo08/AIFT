@@ -11,6 +11,7 @@
             --green-main: #27ae60;
             --green-dark: #196f3d;
             --glass-bg: rgba(255, 255, 255, 0.9);
+            --orange-game: #f39c12; /* 게임 버튼 전용 색상 */
         }
 
         body {
@@ -127,6 +128,37 @@
             font-size: 14px; z-index: 1000;
             border: 1px solid rgba(255,255,255,0.6);
         }
+
+        /* 🎮 우측 하단 둥둥 떠다니는 게임 버튼 스타일 추가 */
+        .game-float-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 70px;
+            height: 70px;
+            background: var(--orange-game);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            text-decoration: none;
+            box-shadow: 0 8px 20px rgba(243, 156, 18, 0.4);
+            z-index: 9999;
+            transition: all 0.3s ease;
+            animation: floating 3s ease-in-out infinite;
+        }
+
+        .game-float-btn:hover {
+            transform: scale(1.1) rotate(10deg);
+            background: #e67e22;
+        }
+
+        @keyframes floating {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
@@ -152,6 +184,8 @@
 
         <a href="/login" class="login-link" id="bottom-login-btn">🔐 로그인 / 회원가입</a>
     </div>
+
+    <a href="/game" class="game-float-btn" title="연구실 게임장 입장">🎮</a>
 
     <script>
         async function fetchTopUserInfo() {
