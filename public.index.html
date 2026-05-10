@@ -49,13 +49,12 @@
             z-index: 1;
         }
 
-        /* 🏷️ 제목과 버튼을 감싸는 컨테이너 추가 */
+        /* 🏷️ 제목 영역: 텍스트를 정중앙에 고정하기 위한 설정 */
         .h1-wrapper {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px; /* 제목과 버튼 사이 간격 */
+            position: relative;
+            display: inline-block; /* 내용만큼만 너비 차지 */
             margin-bottom: 5px;
+            padding: 0 50px; /* 버튼이 들어갈 공간 확보 */
         }
 
         h1 {
@@ -64,10 +63,15 @@
             font-size: 36px;
             letter-spacing: -1.5px;
             font-weight: 900;
+            display: inline-block;
         }
 
-        /* 💬 상담실 이동 버튼 (제목 우측 고정형으로 변경) */
+        /* 💬 상담실 이동 버튼 (제목 텍스트 위치와 상관없이 우측 배치) */
         .game-float-btn {
+            position: absolute;
+            right: 0; /* h1-wrapper의 맨 오른쪽에 배치 */
+            top: 50%;
+            transform: translateY(-50%);
             width: 42px;
             height: 42px;
             background: var(--orange-game);
@@ -79,11 +83,10 @@
             text-decoration: none;
             box-shadow: 0 4px 10px rgba(243, 156, 18, 0.3);
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            flex-shrink: 0; /* 크기 유지 */
         }
 
         .game-float-btn:hover {
-            transform: scale(1.1) rotate(15deg);
+            transform: translateY(-50%) scale(1.1) rotate(15deg);
             background: #e67e22;
         }
 
@@ -156,9 +159,9 @@
             border: 1px solid rgba(255,255,255,0.6);
         }
         
-        /* 모바일 대응: 제목이 길 경우 버튼과 겹치지 않게 폰트 크기 미세 조정 */
         @media (max-width: 400px) {
             h1 { font-size: 30px; }
+            .h1-wrapper { padding: 0 40px; }
             .game-float-btn { width: 36px; height: 36px; font-size: 18px; }
         }
     </style>
