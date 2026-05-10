@@ -1,203 +1,164 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>OJW 화학 런 - 젤리 월드</title>
+    <title>OJW Lab | AI 상담 & 게임</title>
     <style>
-        body { margin: 0; padding: 0; background: #222; overflow: hidden; touch-action: manipulation; font-family: 'Pretendard', sans-serif; }
-        #game-container { position: relative; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; }
-        canvas { background: #f0f4f7; border: 3px solid #1a3a5a; width: 95%; max-width: 600px; border-radius: 10px; display: block; }
+        :root {
+            --main-blue: #1a3a5a;
+            --sub-green: #27ae60;
+            --chat-bg: #ffffff;
+        }
+        body { margin: 0; padding: 0; background: #222; overflow: hidden; font-family: 'Pretendard', sans-serif; }
         
-        /* ✉️ UI 레이어: 시작 및 종료 화면 */
+        /* 전체 레이아웃: 게임(좌) + 채팅(우) */
+        #main-wrapper { 
+            display: flex; width: 100vw; height: 100vh; 
+            justify-content: center; align-items: center; gap: 20px; padding: 20px; box-sizing: border-box;
+        }
+
+        /* 🎮 게임 섹션 */
+        #game-section { position: relative; flex: 1.5; max-width: 600px; }
+        canvas { background: #f0f4f7; border: 3px solid var(--main-blue); width: 100%; border-radius: 15px; display: block; }
+
+        /* 💬 채팅 섹션 */
+        #chat-section { 
+            flex: 1; height: 80vh; max-width: 400px; min-width: 300px;
+            background: var(--chat-bg); border-radius: 15px; 
+            display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        #chat-header { background: var(--main-blue); color: white; padding: 15px; text-align: center; font-weight: bold; }
+        #chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #f9f9f9; }
+        .msg-bubble { padding: 10px 14px; border-radius: 15px; font-size: 14px; max-width: 80%; line-height: 1.5; }
+        .ai-msg { background: #e8f0fe; color: var(--main-blue); align-self: flex-start; border-bottom-left-radius: 2px; }
+        .user-msg { background: var(--sub-green); color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+        #chat-input-area { padding: 10px; border-top: 1px solid #eee; display: flex; gap: 5px; }
+        #user-input { flex: 1; border: 1px solid #ddd; padding: 8px; border-radius: 5px; outline: none; }
+        #send-btn { background: var(--main-blue); color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; }
+
+        /* 시작 UI */
         #ui-layer { 
-            position: absolute; 
-            top: 0; left: 0; width: 100%; height: 100%; 
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 100; background: rgba(0,0,0,0.7); /* 배경을 조금 더 어둡게 */
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            display: flex; justify-content: center; align-items: center;
+            z-index: 100; background: rgba(0,0,0,0.6); border-radius: 15px;
         }
-        #msg-box { 
-            background: white; 
-            padding: 40px; 
-            border-radius: 25px; 
-            text-align: center; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-            min-width: 280px;
-        }
-        #user-welcome { color: #1a3a5a; margin-bottom: 25px; min-height: 50px; }
-        .start-btn {
-            padding: 15px 50px; background: #27ae60; color: white;
-            border: none; border-radius: 50px; font-weight: bold; cursor: pointer; font-size: 20px;
-            box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3);
+        .start-btn { padding: 15px 40px; background: var(--sub-green); color: white; border: none; border-radius: 50px; cursor: pointer; font-size: 18px; }
+
+        @media (max-width: 800px) {
+            #main-wrapper { flex-direction: column; overflow-y: auto; }
+            #chat-section { width: 95%; height: 400px; }
         }
     </style>
 </head>
 <body>
-    <div id="game-container">
+
+<div id="main-wrapper">
+    <div id="game-section">
         <div id="ui-layer">
-            <div id="msg-box">
-                <div id="user-welcome">
-                    <p style="color:#666;">연구실 데이터 동기화 중...</p>
-                </div>
-                <button class="start-btn" id="start-button" onclick="startGame()" style="display:none;">실험 시작</button>
-            </div>
+            <button class="start-btn" onclick="startGame()">실험 시작</button>
         </div>
         <canvas id="c" width="400" height="200"></canvas>
     </div>
 
-    <script>
-        const canvas = document.getElementById('c');
-        const ctx = canvas.getContext('2d');
-        const uiLayer = document.getElementById('ui-layer');
-        const userWelcome = document.getElementById('user-welcome');
-        const startBtn = document.getElementById('start-button');
+    <div id="chat-section">
+        <div id="chat-header">🧪 OJW Lab AI Assistant</div>
+        <div id="chat-messages" id="chat-box">
+            <div class="msg-bubble ai-msg">안녕하세요, 소장님! 무엇을 도와드릴까요?</div>
+        </div>
+        <div id="chat-input-area">
+            <input type="text" id="user-input" placeholder="질문을 입력하세요..." onkeypress="if(event.keyCode==13) sendMessage()">
+            <button id="send-btn" onclick="sendMessage()">전송</button>
+        </div>
+    </div>
+</div>
 
-        let x = 30, y = 140, dy = 0;
-        let score = 0;
-        let obsX = 500;
-        let gameState = 'waiting'; 
-        let speed = 3;
-        let userName = "연구원";
+<script>
+    // [1] 게임 로직 (기존 유지)
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+    const uiLayer = document.getElementById('ui-layer');
+    let x = 30, y = 140, dy = 0, score = 0, obsX = 500, gameState = 'waiting', speed = 3, userName = "연구원";
+    let jellies = [];
+    for(let i=0; i<5; i++) jellies.push({ x: 400 + (i * 100), y: 60 + Math.random()*80, active: true });
 
-        let jellies = [];
-        for(let i=0; i<5; i++) {
-            jellies.push({ x: 400 + (i * 100), y: 60 + Math.random()*80, active: true });
-        }
-
-        // 🔐 핵심: 사용자 정보 로딩 후 버튼 표시
-        async function initGame() {
-            try {
-                console.log("사용자 정보 가져오는 중...");
-                const response = await fetch('/api/userinfo');
-                
-                if (!response.ok) throw new Error('네트워크 응답 에러');
-                
-                const data = await response.json();
-                console.log("수신 데이터:", data);
-
-                if (data.loggedIn && data.user) {
-                    userName = data.user.nickname || "연구원";
-                    userWelcome.innerHTML = `
-                        <h2 style="margin:0; color:#196f3d;">🧪 ${userName} 소장님</h2>
-                        <p style="margin-top:10px; color:#444;">실험 데이터 연동 완료</p>
-                    `;
-                } else {
-                    userWelcome.innerHTML = `
-                        <h2 style="margin:0; color:#c0392b;">미확인 연구원</h2>
-                        <p style="margin-top:10px; color:#666;">기록이 저장되지 않는 모드입니다.</p>
-                    `;
-                }
-            } catch (e) {
-                console.error("로그인 정보 로드 실패:", e);
-                userWelcome.innerHTML = `
-                    <h2 style="margin:0; color:#7f8c8d;">게스트 모드</h2>
-                    <p style="margin-top:10px; color:#95a5a6;">서버 연결 없이 진행합니다.</p>
-                `;
-            } finally {
-                // 정보 로드가 끝나면 (성공이든 실패든) 시작 버튼을 보여줌
-                startBtn.style.display = 'inline-block';
+    async function init() {
+        try {
+            const res = await fetch('/api/userinfo');
+            const data = await res.json();
+            if(data.loggedIn) {
+                userName = data.user.nickname;
+                addMessage(`ai`, `${userName} 회원님, 반갑습니다! 게임을 즐기며 궁금한 건 언제든 물어보세요.`);
             }
-        }
+        } catch(e) { console.log("Offline mode"); }
+    }
 
-        function startGame() {
-            uiLayer.style.display = 'none';
-            gameState = 'playing';
-            loop();
-        }
+    function startGame() { uiLayer.style.display = 'none'; gameState = 'playing'; loop(); }
+    window.addEventListener('mousedown', () => { if(gameState === 'playing' && y >= 140) dy = -11; });
 
-        function handleInteraction() {
-            if (gameState === 'playing' && y >= 140) {
-                dy = -11; 
+    function drawPlayer(px, py) {
+        const cx = px + 15, cy = py + 15;
+        ctx.strokeStyle = "#1a3a5a"; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.ellipse(cx, cy, 15, 6, Math.PI/4, 0, Math.PI*2); ctx.stroke();
+        ctx.beginPath(); ctx.ellipse(cx, cy, 15, 6, -Math.PI/4, 0, Math.PI*2); ctx.stroke();
+        ctx.fillStyle = "#1a3a5a"; ctx.beginPath(); ctx.arc(cx, cy, 4, 0, Math.PI*2); ctx.fill();
+    }
+
+    function loop() {
+        if (gameState !== 'playing') return;
+        requestAnimationFrame(loop);
+        ctx.clearRect(0, 0, 400, 200);
+        ctx.fillStyle = "#1a3a5a"; ctx.fillRect(0, 170, 400, 30);
+        dy += 0.5; y += dy; if (y > 140) y = 140; 
+        drawPlayer(x, y);
+        jellies.forEach(j => {
+            j.x -= speed;
+            if (j.active) {
+                ctx.fillStyle = "#FF69B4"; ctx.beginPath(); ctx.arc(j.x, j.y, 6, 0, Math.PI*2); ctx.fill();
+                if (Math.hypot((x+15)-j.x, (y+15)-j.y) < 25) { j.active = false; score++; }
             }
-        }
-
-        window.addEventListener('mousedown', (e) => {
-            if(gameState === 'playing') handleInteraction();
+            if (j.x < -20) { j.x = 450 + Math.random()*100; j.active = true; }
         });
-        window.addEventListener('touchstart', (e) => {
-            if(gameState === 'playing') handleInteraction();
-        });
-
-        function resetGame() {
-            x = 30; y = 140; dy = 0; score = 0;
-            obsX = 500;
-            jellies.forEach((j, i) => { 
-                j.x = 400 + (i * 100); 
-                j.active = true; 
-            });
-            startGame();
+        obsX -= speed; if (obsX < -20) obsX = 450 + Math.random()*200;
+        ctx.fillStyle = "#FF4500"; ctx.fillRect(obsX, 150, 20, 20);
+        if (obsX < x + 25 && obsX + 20 > x && y > 125) {
+            gameState = 'over'; uiLayer.style.display = 'flex';
+            uiLayer.innerHTML = `<div style="color:white; text-align:center;"><h2>실험 종료: ${score} 젤리</h2><button class="start-btn" onclick="location.reload()">다시 시작</button></div>`;
+            addMessage('ai', `실험이 종료되었습니다! 점수는 ${score}점이네요. 고생하셨습니다!`);
         }
+    }
 
-        function drawPlayer(px, py) {
-            const centerX = px + 15;
-            const centerY = py + 15;
-            ctx.strokeStyle = "#1a3a5a";
-            ctx.lineWidth = 1.5;
-            ctx.beginPath(); ctx.ellipse(centerX, centerY, 15, 6, Math.PI / 4, 0, Math.PI * 2); ctx.stroke();
-            ctx.beginPath(); ctx.ellipse(centerX, centerY, 15, 6, -Math.PI / 4, 0, Math.PI * 2); ctx.stroke();
-            ctx.fillStyle = "#1a3a5a";
-            ctx.beginPath(); ctx.arc(centerX, centerY, 4, 0, Math.PI * 2); ctx.fill();
-            ctx.beginPath(); ctx.arc(centerX + 10, centerY - 5, 2, 0, 7); ctx.fill();
-            ctx.beginPath(); ctx.arc(centerX - 10, centerY + 5, 2, 0, 7); ctx.fill();
-        }
+    // [2] 채팅 로직
+    const chatMessages = document.getElementById('chat-messages');
+    const userInput = document.getElementById('user-input');
 
-        function loop() {
-            if (gameState !== 'playing') return;
-            requestAnimationFrame(loop);
-            ctx.clearRect(0, 0, 400, 200);
-            
-            ctx.fillStyle = "#1a3a5a";
-            ctx.fillRect(0, 170, 400, 30);
+    function addMessage(sender, text) {
+        const div = document.createElement('div');
+        div.className = `msg-bubble ${sender}-msg`;
+        div.innerText = text;
+        chatMessages.appendChild(div);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
 
-            dy += 0.5;
-            y += dy;
-            if (y > 140) y = 140; 
-            
-            drawPlayer(x, y);
+    async function sendMessage() {
+        const text = userInput.value.trim();
+        if (!text) return;
+        addMessage('user', text);
+        userInput.value = '';
 
-            jellies.forEach(j => {
-                j.x -= speed;
-                if (j.active) {
-                    ctx.fillStyle = "#FF69B4";
-                    ctx.beginPath(); ctx.arc(j.x, j.y, 6, 0, Math.PI * 2); ctx.fill();
-                    let dist = Math.hypot((x+15) - j.x, (y+15) - j.y);
-                    if (dist < 25) {
-                        j.active = false;
-                        score += 1;
-                    }
-                }
-                if (j.x < -20) {
-                    j.x = 450 + Math.random() * 100;
-                    j.y = 50 + Math.random() * 90;
-                    j.active = true;
-                }
-            });
-
-            obsX -= speed;
-            if (obsX < -20) {
-                obsX = 450 + Math.random() * 200;
+        // 실제 AI 응답을 위해 서버 API 혹은 제 기능을 연결하는 부분
+        // 여기서는 예시로 정우 소장님의 데이터를 활용한 답변을 흉내냅니다.
+        setTimeout(() => {
+            if(text.includes('화학')) {
+                addMessage('ai', '화학 교육에 대한 열정이 대단하시네요! 젤리 원자의 VSEPR 이론도 궁금하신가요?');
+            } else {
+                addMessage('ai', '좋은 질문입니다, 소장님. 제가 연구실 데이터를 분석해서 도움을 드릴게요.');
             }
-            ctx.fillStyle = "#FF4500";
-            ctx.fillRect(obsX, 150, 20, 20);
+        }, 1000);
+    }
 
-            if (obsX < x + 25 && obsX + 20 > x && y > 125) {
-                gameState = 'over';
-                uiLayer.style.display = 'flex';
-                document.getElementById('msg-box').innerHTML = `
-                    <h1 style='color:#1a3a5a; margin-top:0;'>실험 종료</h1>
-                    <p>${userName} 소장님의 성적: <b>${score}</b> 젤리</p>
-                    <button class="start-btn" onclick="resetGame()">다시 실험하기</button>
-                `;
-                return;
-            }
-
-            ctx.fillStyle = "#1a3a5a";
-            ctx.font = "bold 14px sans-serif";
-            ctx.fillText(`${userName}: ${score} Jelly`, 10, 20);
-        }
-
-        // 페이지 로드 시 초기화 함수 실행
-        initGame();
-    </script>
+    init();
+</script>
 </body>
 </html>
