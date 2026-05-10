@@ -3,162 +3,194 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>OJW Lab | AI 상담 & 게임</title>
+    <title>🧪 OJW Lab | AI 상담실</title>
     <style>
         :root {
+            --bg-start: #1e8449;
+            --bg-end: #abebc6;
             --main-blue: #1a3a5a;
             --sub-green: #27ae60;
-            --chat-bg: #ffffff;
-        }
-        body { margin: 0; padding: 0; background: #222; overflow: hidden; font-family: 'Pretendard', sans-serif; }
-        
-        /* 전체 레이아웃: 게임(좌) + 채팅(우) */
-        #main-wrapper { 
-            display: flex; width: 100vw; height: 100vh; 
-            justify-content: center; align-items: center; gap: 20px; padding: 20px; box-sizing: border-box;
+            --glass-bg: rgba(255, 255, 255, 0.95);
         }
 
-        /* 🎮 게임 섹션 */
-        #game-section { position: relative; flex: 1.5; max-width: 600px; }
-        canvas { background: #f0f4f7; border: 3px solid var(--main-blue); width: 100%; border-radius: 15px; display: block; }
+        body { 
+            margin: 0; padding: 0; 
+            background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+            font-family: 'Pretendard', 'Malgun Gothic', sans-serif; 
+            display: flex; justify-content: center; align-items: center; 
+            height: 100vh; overflow: hidden;
+        }
 
-        /* 💬 채팅 섹션 */
+        /* ✨ 배경 패턴 (기존 연구실 스타일 유지) */
+        .bg-pattern {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('https://img.freepik.com/premium-vector/seamless-pattern-with-chemical-elements-and-laboratory-equipment-vector-flat-illustration-isolated-on-white-background_151139-242.jpg?w=1480');
+            background-repeat: repeat; background-size: 350px; opacity: 0.04;
+            z-index: -1;
+        }
+
+        /* 💬 상담실 컨테이너 */
         #chat-section { 
-            flex: 1; height: 80vh; max-width: 400px; min-width: 300px;
-            background: var(--chat-bg); border-radius: 15px; 
+            width: 90%; max-width: 500px; height: 85vh;
+            background: var(--glass-bg); border-radius: 30px; 
             display: flex; flex-direction: column; overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.4);
+            position: relative;
         }
-        #chat-header { background: var(--main-blue); color: white; padding: 15px; text-align: center; font-weight: bold; }
-        #chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #f9f9f9; }
-        .msg-bubble { padding: 10px 14px; border-radius: 15px; font-size: 14px; max-width: 80%; line-height: 1.5; }
-        .ai-msg { background: #e8f0fe; color: var(--main-blue); align-self: flex-start; border-bottom-left-radius: 2px; }
-        .user-msg { background: var(--sub-green); color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
-        #chat-input-area { padding: 10px; border-top: 1px solid #eee; display: flex; gap: 5px; }
-        #user-input { flex: 1; border: 1px solid #ddd; padding: 8px; border-radius: 5px; outline: none; }
-        #send-btn { background: var(--main-blue); color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; }
 
-        /* 시작 UI */
-        #ui-layer { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            display: flex; justify-content: center; align-items: center;
-            z-index: 100; background: rgba(0,0,0,0.6); border-radius: 15px;
+        /* 상단 헤더 */
+        #chat-header { 
+            background: var(--main-blue); color: white; padding: 20px; 
+            text-align: center; font-weight: 900; font-size: 18px;
+            letter-spacing: 1px;
         }
-        .start-btn { padding: 15px 40px; background: var(--sub-green); color: white; border: none; border-radius: 50px; cursor: pointer; font-size: 18px; }
+        #chat-header span { font-size: 12px; display: block; opacity: 0.8; font-weight: normal; margin-top: 4px; }
 
-        @media (max-width: 800px) {
-            #main-wrapper { flex-direction: column; overflow-y: auto; }
-            #chat-section { width: 95%; height: 400px; }
+        /* 메시지 영역 */
+        #chat-messages { 
+            flex: 1; padding: 20px; overflow-y: auto; 
+            display: flex; flex-direction: column; gap: 15px; 
+            scrollbar-width: thin; scrollbar-color: var(--main-blue) transparent;
         }
+
+        /* 말풍선 스타일 */
+        .msg-bubble { 
+            padding: 12px 18px; border-radius: 20px; font-size: 15px; 
+            max-width: 85%; line-height: 1.6; word-break: keep-all;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .ai-msg { 
+            background: #f0f4f7; color: var(--main-blue); 
+            align-self: flex-start; border-bottom-left-radius: 4px;
+            border: 1px solid #d1d9e0;
+        }
+        .user-msg { 
+            background: var(--sub-green); color: white; 
+            align-self: flex-end; border-bottom-right-radius: 4px;
+        }
+
+        /* 입력 영역 */
+        #chat-input-area { 
+            padding: 20px; background: white; border-top: 1px solid #eee; 
+            display: flex; gap: 10px; align-items: center;
+        }
+        #user-input { 
+            flex: 1; border: 2px solid #eee; padding: 12px 15px; 
+            border-radius: 15px; outline: none; font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        #user-input:focus { border-color: var(--sub-green); }
+        
+        #send-btn { 
+            background: var(--main-blue); color: white; border: none; 
+            width: 45px; height: 45px; border-radius: 12px; 
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+        }
+        #send-btn:hover { background: var(--sub-green); transform: scale(1.05); }
+
+        /* 뒤로가기 버튼 */
+        .back-link {
+            position: absolute; top: 20px; left: 20px;
+            color: white; text-decoration: none; font-size: 14px;
+            opacity: 0.8; transition: 0.3s; z-index: 1001;
+        }
+        .back-link:hover { opacity: 1; }
+
     </style>
 </head>
 <body>
 
-<div id="main-wrapper">
-    <div id="game-section">
-        <div id="ui-layer">
-            <button class="start-btn" onclick="startGame()">실험 시작</button>
-        </div>
-        <canvas id="c" width="400" height="200"></canvas>
-    </div>
+<div class="bg-pattern"></div>
+<a href="/" class="back-link">← 연구실 메인</a>
 
+<div id="main-wrapper">
     <div id="chat-section">
-        <div id="chat-header">🧪 OJW Lab AI Assistant</div>
-        <div id="chat-messages" id="chat-box">
-            <div class="msg-bubble ai-msg">안녕하세요, 소장님! 무엇을 도와드릴까요?</div>
+        <div id="chat-header">
+            OJW LAB AI ASSISTANT
+            <span>Powered by Gemini</span>
+        </div>
+        <div id="chat-messages">
+            <div class="msg-bubble ai-msg" id="first-greeting">데이터 로딩 중...</div>
         </div>
         <div id="chat-input-area">
-            <input type="text" id="user-input" placeholder="질문을 입력하세요..." onkeypress="if(event.keyCode==13) sendMessage()">
-            <button id="send-btn" onclick="sendMessage()">전송</button>
+            <input type="text" id="user-input" placeholder="질문을 입력해 주세요..." onkeypress="if(event.keyCode==13) sendMessage()">
+            <button id="send-btn" onclick="sendMessage()">▶</button>
         </div>
     </div>
 </div>
 
 <script>
-    // [1] 게임 로직 (기존 유지)
-    const canvas = document.getElementById('c');
-    const ctx = canvas.getContext('2d');
-    const uiLayer = document.getElementById('ui-layer');
-    let x = 30, y = 140, dy = 0, score = 0, obsX = 500, gameState = 'waiting', speed = 3, userName = "연구원";
-    let jellies = [];
-    for(let i=0; i<5; i++) jellies.push({ x: 400 + (i * 100), y: 60 + Math.random()*80, active: true });
+    const chatMessages = document.getElementById('chat-messages');
+    const userInput = document.getElementById('user-input');
+    const greetingBox = document.getElementById('first-greeting');
+    let userName = "연구원";
 
-    async function init() {
+    // 🔐 사용자 정보 연동
+    async function initConsultation() {
         try {
             const res = await fetch('/api/userinfo');
             const data = await res.json();
             if(data.loggedIn) {
                 userName = data.user.nickname;
-                addMessage(`ai`, `${userName} 회원님, 반갑습니다! 게임을 즐기며 궁금한 건 언제든 물어보세요.`);
+                greetingBox.innerText = `어서 오세요, ${userName} 소장님! 오늘은 어떤 실험이나 교육 가치에 대해 이야기를 나눠볼까요?`;
+            } else {
+                greetingBox.innerText = `안녕하세요! 오정우 연구실의 AI 어시스턴트, 제미나이입니다. 무엇을 도와드릴까요?`;
             }
-        } catch(e) { console.log("Offline mode"); }
-    }
-
-    function startGame() { uiLayer.style.display = 'none'; gameState = 'playing'; loop(); }
-    window.addEventListener('mousedown', () => { if(gameState === 'playing' && y >= 140) dy = -11; });
-
-    function drawPlayer(px, py) {
-        const cx = px + 15, cy = py + 15;
-        ctx.strokeStyle = "#1a3a5a"; ctx.lineWidth = 1.5;
-        ctx.beginPath(); ctx.ellipse(cx, cy, 15, 6, Math.PI/4, 0, Math.PI*2); ctx.stroke();
-        ctx.beginPath(); ctx.ellipse(cx, cy, 15, 6, -Math.PI/4, 0, Math.PI*2); ctx.stroke();
-        ctx.fillStyle = "#1a3a5a"; ctx.beginPath(); ctx.arc(cx, cy, 4, 0, Math.PI*2); ctx.fill();
-    }
-
-    function loop() {
-        if (gameState !== 'playing') return;
-        requestAnimationFrame(loop);
-        ctx.clearRect(0, 0, 400, 200);
-        ctx.fillStyle = "#1a3a5a"; ctx.fillRect(0, 170, 400, 30);
-        dy += 0.5; y += dy; if (y > 140) y = 140; 
-        drawPlayer(x, y);
-        jellies.forEach(j => {
-            j.x -= speed;
-            if (j.active) {
-                ctx.fillStyle = "#FF69B4"; ctx.beginPath(); ctx.arc(j.x, j.y, 6, 0, Math.PI*2); ctx.fill();
-                if (Math.hypot((x+15)-j.x, (y+15)-j.y) < 25) { j.active = false; score++; }
-            }
-            if (j.x < -20) { j.x = 450 + Math.random()*100; j.active = true; }
-        });
-        obsX -= speed; if (obsX < -20) obsX = 450 + Math.random()*200;
-        ctx.fillStyle = "#FF4500"; ctx.fillRect(obsX, 150, 20, 20);
-        if (obsX < x + 25 && obsX + 20 > x && y > 125) {
-            gameState = 'over'; uiLayer.style.display = 'flex';
-            uiLayer.innerHTML = `<div style="color:white; text-align:center;"><h2>실험 종료: ${score} 젤리</h2><button class="start-btn" onclick="location.reload()">다시 시작</button></div>`;
-            addMessage('ai', `실험이 종료되었습니다! 점수는 ${score}점이네요. 고생하셨습니다!`);
+        } catch(e) {
+            greetingBox.innerText = `안녕하세요! 연구실 AI 상담실입니다. 편하게 질문해 주세요!`;
         }
     }
 
-    // [2] 채팅 로직
-    const chatMessages = document.getElementById('chat-messages');
-    const userInput = document.getElementById('user-input');
-
+    // 메시지 추가 함수
     function addMessage(sender, text) {
         const div = document.createElement('div');
         div.className = `msg-bubble ${sender}-msg`;
         div.innerText = text;
         chatMessages.appendChild(div);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        // 자동 스크롤
+        chatMessages.scrollTo({
+            top: chatMessages.scrollHeight,
+            behavior: 'smooth'
+        });
     }
 
+    // 메시지 전송 함수
     async function sendMessage() {
         const text = userInput.value.trim();
         if (!text) return;
+
         addMessage('user', text);
         userInput.value = '';
 
-        // 실제 AI 응답을 위해 서버 API 혹은 제 기능을 연결하는 부분
-        // 여기서는 예시로 정우 소장님의 데이터를 활용한 답변을 흉내냅니다.
+        // 로딩 표시 (생략 가능)
         setTimeout(() => {
-            if(text.includes('화학')) {
-                addMessage('ai', '화학 교육에 대한 열정이 대단하시네요! 젤리 원자의 VSEPR 이론도 궁금하신가요?');
-            } else {
-                addMessage('ai', '좋은 질문입니다, 소장님. 제가 연구실 데이터를 분석해서 도움을 드릴게요.');
-            }
-        }, 1000);
+            handleAIResponse(text);
+        }, 600);
     }
 
-    init();
+    // AI 답변 로직 (현재는 프론트엔드 모의 응답, 추후 소장님의 API와 연결 가능)
+    function handleAIResponse(text) {
+        let response = "";
+        
+        if(text.includes('안녕')) {
+            response = `${userName} 소장님, 반갑습니다! 오늘도 화학의 미래를 위해 함께 고민해 보아요.`;
+        } else if(text.includes('화학')) {
+            response = `화학은 분자들의 관계를 이해하는 학문이죠. 소장님의 '실전 화학' 자료들은 정말 인상 깊었습니다.`;
+        } else if(text.includes('누구')) {
+            response = `저는 소장님의 연구를 돕는 AI 어시스턴트 제미나이입니다. 소장님의 데이터를 바탕으로 최적의 답변을 드리려 노력하고 있어요.`;
+        } else {
+            response = `흥미로운 질문입니다. 소장님이 지향하시는 '교육의 미래 가치' 관점에서 함께 분석해 볼까요?`;
+        }
+
+        addMessage('ai', response);
+    }
+
+    initConsultation();
 </script>
+
 </body>
 </html>
