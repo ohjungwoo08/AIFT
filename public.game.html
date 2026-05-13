@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🧪 OJW Lab | 연구원 미션</title>
+    <title>🧪 OJW Lab | 긴급 미션!</title>
     <style>
         :root {
             --main-blue: #1a3a5a;
             --sub-green: #27ae60;
             --accent-gold: #f1c40f;
-            --bg-color: #f8fafc;
+            --danger-red: #e74c3c;
+            --bg-color: #f0f4f8;
         }
 
         body {
@@ -19,17 +20,16 @@
             display: flex; justify-content: center; align-items: center; height: 100vh;
         }
 
-        /* 🔬 게임 배경 및 컨테이너 */
         #game-container {
             position: relative; width: 100%; max-width: 600px; height: 95vh;
-            background: linear-gradient(to bottom, #ffffff, #eef2f3);
+            background: #ffffff;
             border: 5px solid var(--main-blue); border-radius: 30px;
-            overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+            overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.2);
         }
 
-        /* 👨‍🔬 웰컴 팝업 */
-        #welcome-overlay {
-            position: absolute; inset: 0; background: rgba(0,0,0,0.8);
+        /* 👨‍🔬 웰컴 및 게임오버 팝업 */
+        #popup-overlay {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.85);
             display: flex; justify-content: center; align-items: center; z-index: 100;
         }
         .popup {
@@ -37,15 +37,24 @@
             max-width: 80%; border: 4px solid var(--sub-green);
         }
         .popup h2 { color: var(--main-blue); margin-top: 0; }
-        .popup p { font-size: 18px; color: #333; line-height: 1.6; }
-        #start-btn {
+        .popup p { font-size: 18px; color: #333; line-height: 1.6; white-space: pre-line; }
+        .game-btn {
             background: var(--sub-green); color: white; border: none;
             padding: 15px 40px; font-size: 18px; font-weight: bold;
-            border-radius: 10px; cursor: pointer; transition: 0.3s;
+            border-radius: 10px; cursor: pointer; transition: 0.3s; margin-top: 20px;
         }
-        #start-btn:hover { background: var(--main-blue); transform: scale(1.05); }
+        .game-btn:hover { background: var(--main-blue); transform: scale(1.05); }
 
-        /* ⚛️ 원자 모형 플레이어 (화학런 친구) */
+        /* 📊 UI 레이어 (점수 & 생명) */
+        #ui-layer {
+            position: absolute; top: 20px; left: 0; width: 100%;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 30px; box-sizing: border-box;
+            z-index: 50; font-weight: bold; font-size: 20px; color: var(--main-blue);
+        }
+        #heart-container { font-size: 24px; color: var(--danger-red); }
+
+        /* ⚛️ 원자 모형 플레이어 */
         #player {
             position: absolute; bottom: 50px; left: 50%;
             width: 70px; height: 70px; transform: translateX(-50%);
@@ -65,16 +74,10 @@
 
         @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        /* 🧪 떨어지는 실험 기구 */
-        .beaker {
+        /* 떨어지는 물체 공통 */
+        .falling-obj {
             position: absolute; font-size: 40px; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.1));
-        }
-
-        /* 📊 점수판 */
-        #ui-layer {
-            position: absolute; top: 20px; left: 0; width: 100%;
-            display: flex; justify-content: space-around; font-weight: bold;
-            font-size: 20px; color: var(--main-blue); z-index: 50;
+            user-select: none;
         }
 
         .back-link { text-decoration: none; color: #888; font-size: 14px; }
@@ -83,17 +86,18 @@
 <body>
 
     <div id="game-container">
-        <div id="welcome-overlay">
-            <div class="popup">
-                <h2 id="welcome-title">데이터 로딩 중...</h2>
-                <p id="welcome-msg">실험실 보안 확인 중입니다.</p>
-                <button id="start-btn" onclick="startGame()">실험 시작</button>
+        <div id="popup-overlay">
+            <div class="popup" id="popup-content">
+                <h2 id="popup-title">데이터 로딩 중...</h2>
+                <p id="popup-msg">실험실 보안 확인 중입니다.</p>
+                <button class="game-btn" id="main-btn" onclick="startGame()">실험 시작</button>
             </div>
         </div>
 
         <div id="ui-layer">
-            <div id="score-text">실험 성공: 0</div>
-            <a href="/" class="back-link">연구실 메인으로</a>
+            <div id="score-text">성공: 0</div>
+            <div id="heart-container">❤️❤️❤️</div>
+            <a href="/" class="back-link">연구실 메인</a>
         </div>
 
         <div id="player">
@@ -108,12 +112,21 @@
         const container = document.getElementById('game-container');
         const player = document.getElementById('player');
         const scoreText = document.getElementById('score-text');
-        const overlay = document.getElementById('welcome-overlay');
-        const beakers = ['🧪', '⚗️', '🌡️', '🔬', '🍷'];
+        const heartContainer = document.getElementById('heart-container');
+        const overlay = document.getElementById('popup-overlay');
+        const popupTitle = document.getElementById('popup-title');
+        const popupMsg = document.getElementById('popup-msg');
+        const mainBtn = document.getElementById('main-btn');
+
+        // 물체 목록
+        const goodItems = ['🧪', '⚗️', '🌡️', '🔬']; // 점수
+        const badItems = ['💣', '☢️', '☣️', '⚠️'];  // 데미지
 
         let score = 0;
+        let lives = 3;
         let isGameRunning = false;
         let playerX = container.offsetWidth / 2;
+        let spawnTimer;
 
         // 1. 연구원 이름 가져오기
         async function fetchResearcherName() {
@@ -121,50 +134,75 @@
                 const res = await fetch('/api/userinfo');
                 const data = await res.json();
                 if (data.loggedIn) {
-                    document.getElementById('welcome-title').innerText = `어서 오세요, ${data.user.nickname} 연구원님!`;
-                    document.getElementById('welcome-msg').innerText = "하늘에서 떨어지는 실험 도구들을 안전하게 수집하여\n연구를 완성해 주세요!";
+                    popupTitle.innerText = `긴급 미션, ${data.user.nickname} 연구원!`;
+                    popupMsg.innerText = "연구실에 위험 물질이 낙하하고 있습니다!\n안전한 도구만 수집하고 위험 물질은 반드시 피하세요.\n(3번 충돌 시 실험 강제 종료)";
                 } else {
-                    document.getElementById('welcome-title').innerText = `신규 연구원님 환영합니다!`;
-                    document.getElementById('welcome-msg').innerText = "로그인하시면 연구원님의 이름으로 실험이 기록됩니다.";
+                    popupTitle.innerText = `신규 연구원님, 긴급 호출!`;
+                    popupMsg.innerText = "보안 등급이 낮아 기록이 남지 않습니다.\n그래도 위험 물질 수집 미션을 수행해 주시겠습니까?";
                 }
             } catch (e) {
-                document.getElementById('welcome-title').innerText = "연구실 접속 완료";
+                popupTitle.innerText = "연구실 긴급 상황";
             }
         }
 
-        // 2. 게임 시작
+        // 2. 게임 시작/재시작
         function startGame() {
-            overlay.style.display = 'none';
+            score = 0;
+            lives = 3;
             isGameRunning = true;
-            spawnBeaker();
+            scoreText.innerText = `성공: ${score}`;
+            heartContainer.innerText = '❤️❤️❤️';
+            overlay.style.display = 'none';
+            spawnObject();
         }
 
-        // 3. 플레이어 이동 (마우스/터치)
+        // 3. 게임 오버
+        function gameOver() {
+            isGameRunning = false;
+            overlay.style.display = 'flex';
+            popupTitle.innerText = "실험 강제 종료!";
+            popupTitle.style.color = "var(--danger-red)";
+            popupMsg.innerText = `위험 물질과의 충돌로 미션이 실패했습니다.\n\n최종 수집 성공 횟수: ${score}`;
+            mainBtn.innerText = "다시 도전";
+            mainBtn.onclick = startGame;
+        }
+
+        // 4. 플레이어 이동
         const moveHandler = (e) => {
             if (!isGameRunning) return;
             const rect = container.getBoundingClientRect();
-            let x = (e.clientX || e.touches[0].clientX) - rect.left;
+            let x = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
             if (x < 35) x = 35;
             if (x > container.offsetWidth - 35) x = container.offsetWidth - 35;
             playerX = x;
             player.style.left = playerX + 'px';
         };
-
         container.addEventListener('mousemove', moveHandler);
         container.addEventListener('touchmove', (e) => { e.preventDefault(); moveHandler(e); }, {passive: false});
 
-        // 4. 비커 생성 및 낙하
-        function spawnBeaker() {
+        // 5. 물체 생성 및 낙하
+        function spawnObject() {
             if (!isGameRunning) return;
 
             const b = document.createElement('div');
-            b.className = 'beaker';
-            b.innerText = beakers[Math.floor(Math.random() * beakers.length)];
-            b.style.left = Math.random() * (container.offsetWidth - 50) + 25 + 'px';
+            b.className = 'falling-obj';
+            
+            // 70% 확률로 좋은 아이템, 30% 확률로 위험 물질
+            const isGood = Math.random() > 0.3;
+            if (isGood) {
+                b.innerText = goodItems[Math.floor(Math.random() * goodItems.length)];
+                b.dataset.type = 'good';
+            } else {
+                b.innerText = badItems[Math.floor(Math.random() * badItems.length)];
+                b.dataset.type = 'bad';
+                b.style.filter = 'drop-shadow(0 0 10px rgba(231, 76, 60, 0.5))'; // 위험 물질은 빛나게
+            }
+
+            b.style.left = Math.random() * (container.offsetWidth - 60) + 30 + 'px';
             b.style.top = '-50px';
             container.appendChild(b);
 
-            let speed = 4 + Math.random() * 3;
+            let speed = 4 + Math.random() * (3 + score * 0.1); // 점수에 따라 아주 조금씩 빨라짐
 
             function fall() {
                 if (!isGameRunning) { b.remove(); return; }
@@ -173,10 +211,23 @@
 
                 // 충돌 판정
                 if (top > container.offsetHeight - 120 && top < container.offsetHeight - 50) {
-                    let beakerX = parseFloat(b.style.left);
-                    if (Math.abs(beakerX - playerX) < 45) {
-                        score += 1;
-                        scoreText.innerText = `실험 성공: ${score}`;
+                    let objX = parseFloat(b.style.left);
+                    if (Math.abs(objX - playerX) < 45) {
+                        if (b.dataset.type === 'good') {
+                            score += 1;
+                            scoreText.innerText = `성공: ${score}`;
+                        } else {
+                            // 위험 물질 충돌
+                            lives -= 1;
+                            heartContainer.innerText = '❤️'.repeat(lives) + '🖤'.repeat(3 - lives);
+                            // 화면 깜빡임 효과
+                            container.style.animation = 'shake 0.3s';
+                            setTimeout(() => container.style.animation = '', 300);
+                            
+                            if (lives <= 0) {
+                                gameOver();
+                            }
+                        }
                         b.remove();
                         return;
                     }
@@ -189,8 +240,16 @@
                 }
             }
             requestAnimationFrame(fall);
-            setTimeout(spawnBeaker, 1000 - Math.min(score * 5, 500)); // 점수가 오를수록 조금씩 빨라짐
+
+            // 다음 물체 생성 시간 조절 (점수에 따라 빨라짐)
+            const nextSpawn = 1000 - Math.min(score * 10, 600);
+            spawnTimer = setTimeout(spawnObject, nextSpawn);
         }
+
+        // 화면 흔들림 애니메이션 CSS 추가
+        const style = document.createElement('style');
+        style.innerHTML = '@keyframes shake { 0% { left: 0; } 25% { left: -5px; } 50% { left: 5px; } 75% { left: -5px; } 100% { left: 0; } }';
+        document.head.appendChild(style);
 
         fetchResearcherName();
     </script>
