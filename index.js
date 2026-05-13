@@ -133,3 +133,25 @@ app.delete('/api/posts/:id', async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 소장님 전용 서버 가동: ${PORT}`));
+
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+
+// 1. 제미나이 설정
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ 
+    model: "gemini-1.5-flash",
+    systemInstruction: "너는 오정우 연구실의 AI 상담원이야. 소장님 정우님은 화학과 미래 교육을 사랑하는 고3 학생이자 연구자야. 친절하고 전문적으로 대답해줘." 
+});
+
+// 2. 상담을 처리하는 창구(API) 만들기
+app.post("/api/chat", async (req, res) => {
+    try {
+        const { message } = req.body;
+        const result = await model.generateContent(message);
+        const response = await result.response;
+        res.json({ reply: response.text() }); // 진짜 제미나이의 답변을 보내줌
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ reply: "소장님, 연결에 문제가 생겼어요!" });
+    }
+});
