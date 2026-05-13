@@ -3,133 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🧪 OJW Lab | AI 상담실</title>
+    <title>🧪 OJW Lab | 원소 수집 게임</title>
     <style>
         :root {
-            --bg-start: #1e8449;
-            --bg-end: #abebc6;
-            --main-blue: #1a3a5a;
-            --sub-green: #27ae60;
-            --glass-bg: rgba(255, 255, 255, 0.95);
+            --bg-start: #1e8449; --bg-end: #abebc6;
+            --main-blue: #1a3a5a; --sub-green: #27ae60;
         }
-
         body { 
-            margin: 0; padding: 0; 
+            margin: 0; overflow: hidden; font-family: 'Pretendard', sans-serif;
             background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
-            font-family: 'Pretendard', 'Malgun Gothic', sans-serif; 
-            display: flex; justify-content: center; align-items: center; 
-            height: 100vh; overflow: hidden;
+            display: flex; justify-content: center; align-items: center; height: 100vh;
         }
-
-        /* ✨ 배경 패턴 (기존 연구실 스타일 유지) */
-        .bg-pattern {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-image: url('https://img.freepik.com/premium-vector/seamless-pattern-with-chemical-elements-and-laboratory-equipment-vector-flat-illustration-isolated-on-white-background_151139-242.jpg?w=1480');
-            background-repeat: repeat; background-size: 350px; opacity: 0.04;
-            z-index: -1;
+        #game-container {
+            position: relative; width: 100%; max-width: 500px; height: 90vh;
+            background: rgba(255, 255, 255, 0.9); border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2); overflow: hidden;
         }
-
-        /* 💬 상담실 컨테이너 */
-        #chat-section { 
-            width: 90%; max-width: 500px; height: 85vh;
-            background: var(--glass-bg); border-radius: 30px; 
-            display: flex; flex-direction: column; overflow: hidden;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.4);
-            position: relative;
+        #score-board {
+            position: absolute; top: 20px; left: 20px; font-size: 24px;
+            font-weight: 900; color: var(--main-blue); z-index: 10;
         }
-
-        /* 상단 헤더 */
-        #chat-header { 
-            background: var(--main-blue); color: white; padding: 20px; 
-            text-align: center; font-weight: 900; font-size: 18px;
-            letter-spacing: 1px;
+        #basket {
+            position: absolute; bottom: 30px; left: 50%;
+            width: 80px; height: 50px; background: var(--main-blue);
+            border-radius: 0 0 20px 20px; transform: translateX(-50%);
+            display: flex; justify-content: center; align-items: center;
+            color: white; font-weight: bold; font-size: 12px;
         }
-        #chat-header span { font-size: 12px; display: block; opacity: 0.8; font-weight: normal; margin-top: 4px; }
-
-        /* 메시지 영역 */
-        #chat-messages { 
-            flex: 1; padding: 20px; overflow-y: auto; 
-            display: flex; flex-direction: column; gap: 15px; 
-            scrollbar-width: thin; scrollbar-color: var(--main-blue) transparent;
+        .element {
+            position: absolute; font-size: 30px; user-select: none;
         }
-
-        /* 말풍선 스타일 */
-        .msg-bubble { 
-            padding: 12px 18px; border-radius: 20px; font-size: 15px; 
-            max-width: 85%; line-height: 1.6; word-break: keep-all;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-        .ai-msg { 
-            background: #f0f4f7; color: var(--main-blue); 
-            align-self: flex-start; border-bottom-left-radius: 4px;
-            border: 1px solid #d1d9e0;
-        }
-        .user-msg { 
-            background: var(--sub-green); color: white; 
-            align-self: flex-end; border-bottom-right-radius: 4px;
-        }
-
-        /* 입력 영역 */
-        #chat-input-area { 
-            padding: 20px; background: white; border-top: 1px solid #eee; 
-            display: flex; gap: 10px; align-items: center;
-        }
-        #user-input { 
-            flex: 1; border: 2px solid #eee; padding: 12px 15px; 
-            border-radius: 15px; outline: none; font-size: 14px;
-            transition: border-color 0.3s;
-        }
-        #user-input:focus { border-color: var(--sub-green); }
-        
-        #send-btn { 
-            background: var(--main-blue); color: white; border: none; 
-            width: 45px; height: 45px; border-radius: 12px; 
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
-            transition: all 0.2s;
-        }
-        #send-btn:hover { background: var(--sub-green); transform: scale(1.05); }
-
-        /* 뒤로가기 버튼 */
         .back-link {
-            position: absolute; top: 20px; left: 20px;
-            color: white; text-decoration: none; font-size: 14px;
-            opacity: 0.8; transition: 0.3s; z-index: 1001;
+            position: absolute; top: 20px; right: 20px;
+            color: var(--main-blue); text-decoration: none; font-weight: bold; z-index: 10;
         }
-        .back-link:hover { opacity: 1; }
+        #game-over {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            text-align: center; display: none; background: white; padding: 30px;
+            border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
 
-<div class="bg-pattern"></div>
-<a href="/" class="back-link">← 연구실 메인</a>
-
-<div id="main-wrapper">
-    <div id="chat-section">
-        <div id="chat-header">
-            OJW LAB AI ASSISTANT
-            <span>Powered by Gemini</span>
-        </div>
-        <div id="chat-messages">
-            <div class="msg-bubble ai-msg" id="first-greeting">데이터 로딩 중...</div>
-        </div>
-        <div id="chat-input-area">
-            <input type="text" id="user-input" placeholder="질문을 입력해 주세요..." onkeypress="if(event.keyCode==13) sendMessage()">
-            <button id="send-btn" onclick="sendMessage()">▶</button>
+    <div id="game-container">
+        <div id="score-board">SCORE: 0</div>
+        <a href="/" class="back-link">메인으로</a>
+        <div id="basket">비커(Beaker)</div>
+        
+        <div id="game-over">
+            <h2 style="color: var(--main-blue);">실험 종료!</h2>
+            <p id="final-score">최종 점수: 0</p>
+            <button onclick="location.reload()" style="padding: 10px 20px; cursor: pointer;">다시 도전</button>
         </div>
     </div>
-</div>
 
-<script>
-    const chatMessages = document.getElementById('chat-messages');
-    const userInput = document.getElementById('user-input');
-    const greetingBox = document.getElementById('first-greeting');
-    let userName = "연구원";
+    <script>
+        const container = document.getElementById('game-container');
+        const basket = document.getElementById('basket');
+        const scoreBoard = document.getElementById('score-board');
+        const elements = ['H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', '🧪', '🔬', '💎'];
+        
+        let score = 0;
+        let basketX = container.offsetWidth / 2;
+        let isGameOver = false;
 
-    // 🔐 사용자 정보 연동 및 초기 인사
-    async function initConsultation() {
-        try {
-            const res = await fetch('/api/userinfo');
-            const data = await res.json();
-            if(data.loggedIn) {
+        // 바구니 이동 (마우스 & 터치)
+        const moveBasket = (e) => {
+            if (isGameOver) return;
+            const rect = container.getBoundingClientRect();
+            let x = (e.clientX || e.touches[0].clientX) - rect.left;
+            if (x < 40) x = 40;
+            if (x > container.offsetWidth - 40) x = container.offsetWidth - 40;
+            basketX = x;
+            basket.style.left = basketX + 'px';
+        };
+
+        container.addEventListener('mousemove', moveBasket);
+        container.addEventListener('touchmove', moveBasket);
+
+        // 원소 생성 함수
+        function createEmoji() {
+            if (isGameOver) return;
+            const el = document.createElement('div');
+            el.className = 'element';
+            el.innerText = elements[Math.floor(Math.random() * elements.length)];
+            el.style.left = Math.random() * (container.offsetWidth - 30) + 'px';
+            el.style.top = '-50px';
+            container.appendChild(el);
+
+            let fallSpeed = 3 + Math.random() * 4;
+            
+            function fall() {
+                if (isGameOver) {
+                    el.remove();
+                    return;
+                }
+                let top = parseFloat(el.style.top);
+                el.style.top = (top + fallSpeed) + 'px';
+
+                // 충돌 체크
+                if (top + 40 > container.offsetHeight - 80 && 
+                    top < container.offsetHeight - 30 &&
+                    Math.abs(parseFloat(el.style.left) - (basketX - 25)) < 50) {
+                    score += 10;
+                    scoreBoard.innerText = `SCORE: ${score}`;
+                    el.remove();
+                    return;
+                }
+
+                // 바닥에 닿음
+                if (top > container.offsetHeight) {
+                    el.remove();
+                } else {
+                    requestAnimationFrame(fall);
+                }
+            }
+            fall();
+            setTimeout(createEmoji, 800);
+        }
+
+        createEmoji();
+    </script>
+</body>
+</html>
