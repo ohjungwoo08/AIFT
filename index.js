@@ -2,7 +2,7 @@ const express = require('express');
 const { Pool } = require('pg');
 const path = require('path');
 const session = require('express-session');
-// 🚀 제미나이 연결을 위한 라이브러리 추가
+// 🚀 제미나이 연결을 위한 라이브러리추가
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const app = express();
