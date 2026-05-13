@@ -2,8 +2,6 @@ const express = require('express');
 const { Pool } = require('pg');
 const path = require('path');
 const session = require('express-session');
-// 🚀 제미나이 연결을 위한 라이브러리추가
-const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const app = express();
 
@@ -129,26 +127,6 @@ app.delete('/api/posts/:id', async (req, res) => {
         }
         res.sendStatus(200);
     } catch (e) { res.status(500).send("삭제 실패"); }
-});
-
-// --- [ 🚀 여기서부터 새로 덧붙인 제미나이 상담 API 코드 ] ---
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ 
-    model: "gemini-1.5-flash",
-    systemInstruction: "너는 오정우 연구실의 AI 상담원이야. 소장님 정우님은 화학과 미래 가치를 연구하는 열정적인 고3 학생이야. 방문객에게 친절하고 위트 있게, 그리고 화학 관련 질문에는 전문적으로 답변해줘."
-});
-
-app.post('/api/chat', async (req, res) => {
-    try {
-        const { message } = req.body;
-        const result = await model.generateContent(message);
-        const response = await result.response;
-        res.json({ reply: response.text() });
-    } catch (e) {
-        console.error(e);
-        res.status(500).json({ reply: "상담원이 실험 도구 정리 중이라 답변이 늦어지고 있습니다. 잠시 후 다시 시도해 주세요!" });
-    }
 });
 
 // --- [ 서버 구동 ] ---
