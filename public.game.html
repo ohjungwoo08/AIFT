@@ -98,7 +98,6 @@
             opacity: 0.8; transition: 0.3s; z-index: 1001;
         }
         .back-link:hover { opacity: 1; }
-
     </style>
 </head>
 <body>
@@ -128,69 +127,9 @@
     const greetingBox = document.getElementById('first-greeting');
     let userName = "연구원";
 
-    // 🔐 사용자 정보 연동
+    // 🔐 사용자 정보 연동 및 초기 인사
     async function initConsultation() {
         try {
             const res = await fetch('/api/userinfo');
             const data = await res.json();
             if(data.loggedIn) {
-                userName = data.user.nickname;
-                greetingBox.innerText = `어서 오세요, ${userName} 소장님! 오늘은 어떤 실험이나 교육 가치에 대해 이야기를 나눠볼까요?`;
-            } else {
-                greetingBox.innerText = `안녕하세요! 오정우 연구실의 AI 어시스턴트, 제미나이입니다. 무엇을 도와드릴까요?`;
-            }
-        } catch(e) {
-            greetingBox.innerText = `안녕하세요! 연구실 AI 상담실입니다. 편하게 질문해 주세요!`;
-        }
-    }
-
-    // 메시지 추가 함수
-    function addMessage(sender, text) {
-        const div = document.createElement('div');
-        div.className = `msg-bubble ${sender}-msg`;
-        div.innerText = text;
-        chatMessages.appendChild(div);
-        
-        // 자동 스크롤
-        chatMessages.scrollTo({
-            top: chatMessages.scrollHeight,
-            behavior: 'smooth'
-        });
-    }
-
-    // 메시지 전송 함수
-    async function sendMessage() {
-        const text = userInput.value.trim();
-        if (!text) return;
-
-        addMessage('user', text);
-        userInput.value = '';
-
-        // 로딩 표시 (생략 가능)
-        setTimeout(() => {
-            handleAIResponse(text);
-        }, 600);
-    }
-
-    // AI 답변 로직 (현재는 프론트엔드 모의 응답, 추후 소장님의 API와 연결 가능)
-    function handleAIResponse(text) {
-        let response = "";
-        
-        if(text.includes('안녕')) {
-            response = `${userName} 소장님, 반갑습니다! 오늘도 화학의 미래를 위해 함께 고민해 보아요.`;
-        } else if(text.includes('화학')) {
-            response = `화학은 분자들의 관계를 이해하는 학문이죠. 소장님의 '실전 화학' 자료들은 정말 인상 깊었습니다.`;
-        } else if(text.includes('누구')) {
-            response = `저는 소장님의 연구를 돕는 AI 어시스턴트 제미나이입니다. 소장님의 데이터를 바탕으로 최적의 답변을 드리려 노력하고 있어요.`;
-        } else {
-            response = `흥미로운 질문입니다. 소장님이 지향하시는 '교육의 미래 가치' 관점에서 함께 분석해 볼까요?`;
-        }
-
-        addMessage('ai', response);
-    }
-
-    initConsultation();
-</script>
-
-</body>
-</html>
