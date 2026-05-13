@@ -2,13 +2,15 @@ const express = require('express');
 const { Pool } = require('pg');
 const path = require('path');
 const session = require('express-session');
+// 🚀 제미나이 연결을 위한 라이브러리 추가
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // --- [ 🟢 정적 파일 서비스 설정 ] ---
-// 파일명이 'public.page1.html'이더라도 서버가 파일을 찾을 수 있도록 루트와 public을 모두 개방합니다.
 app.use(express.static(path.join(__dirname)));
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -22,16 +24,14 @@ app.use(session({
 const connectionString = 'postgresql://neondb_owner:npg_2NLfAupgsz9C@ep-steep-resonance-a1p6ccy6-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require';
 const pool = new Pool({ connectionString, ssl: { rejectUnauthorized: false } });
 
-// --- [ 페이지 연결: 파일명 구조에 맞게 최적화 ] ---
-// path.resolve를 사용하여 'public.page1.html'이라는 이름을 가진 파일을 정확히 지목합니다.
+// --- [ 페이지 연결 ] ---
 app.get('/', (req, res) => res.sendFile(path.resolve(__dirname, 'public.index.html')));
 app.get('/page1', (req, res) => res.sendFile(path.resolve(__dirname, 'public.page1.html')));
 app.get('/page2', (req, res) => res.sendFile(path.resolve(__dirname, 'public.page2.html')));
 app.get('/login', (req, res) => res.sendFile(path.resolve(__dirname, 'public.login.html')));
-// 🎮 새로 추가된 미니게임 연결
 app.get('/game', (req, res) => res.sendFile(path.resolve(__dirname, 'public.game.html')));
 
-// --- [ 🟢 사용자 정보 확인 API (이 부분이 닉네임 표시의 핵심!) ] ---
+// --- [ 🟢 사용자 정보 확인 API ] ---
 app.get('/api/userinfo', (req, res) => {
     if (req.session.user) {
         res.json({ loggedIn: true, user: req.session.user });
@@ -131,5 +131,26 @@ app.delete('/api/posts/:id', async (req, res) => {
     } catch (e) { res.status(500).send("삭제 실패"); }
 });
 
+// --- [ 🚀 여기서부터 새로 덧붙인 제미나이 상담 API 코드 ] ---
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ 
+    model: "gemini-1.5-flash",
+    systemInstruction: "너는 오정우 연구실의 AI 상담원이야. 소장님 정우님은 화학과 미래 가치를 연구하는 열정적인 고3 학생이야. 방문객에게 친절하고 위트 있게, 그리고 화학 관련 질문에는 전문적으로 답변해줘."
+});
+
+app.post('/api/chat', async (req, res) => {
+    try {
+        const { message } = req.body;
+        const result = await model.generateContent(message);
+        const response = await result.response;
+        res.json({ reply: response.text() });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ reply: "상담원이 실험 도구 정리 중이라 답변이 늦어지고 있습니다. 잠시 후 다시 시도해 주세요!" });
+    }
+});
+
+// --- [ 서버 구동 ] ---
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 소장님 전용 서버 가동: ${PORT}`));
