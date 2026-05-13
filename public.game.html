@@ -3,127 +3,196 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🧪 OJW Lab | 원소 수집 게임</title>
+    <title>🧪 OJW Lab | 연구원 미션</title>
     <style>
         :root {
-            --bg-start: #1e8449; --bg-end: #abebc6;
-            --main-blue: #1a3a5a; --sub-green: #27ae60;
+            --main-blue: #1a3a5a;
+            --sub-green: #27ae60;
+            --accent-gold: #f1c40f;
+            --bg-color: #f8fafc;
         }
-        body { 
-            margin: 0; overflow: hidden; font-family: 'Pretendard', sans-serif;
-            background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+
+        body {
+            margin: 0; padding: 0; overflow: hidden;
+            font-family: 'Pretendard', sans-serif;
+            background-color: var(--bg-color);
             display: flex; justify-content: center; align-items: center; height: 100vh;
         }
+
+        /* 🔬 게임 배경 및 컨테이너 */
         #game-container {
-            position: relative; width: 100%; max-width: 500px; height: 90vh;
-            background: rgba(255, 255, 255, 0.9); border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2); overflow: hidden;
+            position: relative; width: 100%; max-width: 600px; height: 95vh;
+            background: linear-gradient(to bottom, #ffffff, #eef2f3);
+            border: 5px solid var(--main-blue); border-radius: 30px;
+            overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.15);
         }
-        #score-board {
-            position: absolute; top: 20px; left: 20px; font-size: 24px;
-            font-weight: 900; color: var(--main-blue); z-index: 10;
+
+        /* 👨‍🔬 웰컴 팝업 */
+        #welcome-overlay {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.8);
+            display: flex; justify-content: center; align-items: center; z-index: 100;
         }
-        #basket {
-            position: absolute; bottom: 30px; left: 50%;
-            width: 80px; height: 50px; background: var(--main-blue);
-            border-radius: 0 0 20px 20px; transform: translateX(-50%);
-            display: flex; justify-content: center; align-items: center;
-            color: white; font-weight: bold; font-size: 12px;
+        .popup {
+            background: white; padding: 40px; border-radius: 20px; text-align: center;
+            max-width: 80%; border: 4px solid var(--sub-green);
         }
-        .element {
-            position: absolute; font-size: 30px; user-select: none;
+        .popup h2 { color: var(--main-blue); margin-top: 0; }
+        .popup p { font-size: 18px; color: #333; line-height: 1.6; }
+        #start-btn {
+            background: var(--sub-green); color: white; border: none;
+            padding: 15px 40px; font-size: 18px; font-weight: bold;
+            border-radius: 10px; cursor: pointer; transition: 0.3s;
         }
-        .back-link {
-            position: absolute; top: 20px; right: 20px;
-            color: var(--main-blue); text-decoration: none; font-weight: bold; z-index: 10;
+        #start-btn:hover { background: var(--main-blue); transform: scale(1.05); }
+
+        /* ⚛️ 원자 모형 플레이어 (화학런 친구) */
+        #player {
+            position: absolute; bottom: 50px; left: 50%;
+            width: 70px; height: 70px; transform: translateX(-50%);
+            z-index: 10; display: flex; justify-content: center; align-items: center;
         }
-        #game-over {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            text-align: center; display: none; background: white; padding: 30px;
-            border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        .atom-core {
+            width: 25px; height: 25px; background: #e74c3c; border-radius: 50%; position: absolute;
+            box-shadow: 0 0 15px rgba(231, 76, 60, 0.8);
         }
+        .electron-orbit {
+            position: absolute; width: 60px; height: 25px;
+            border: 2px solid var(--main-blue); border-radius: 50%;
+            animation: rotate 2s linear infinite;
+        }
+        .electron-orbit:nth-child(2) { transform: rotate(60deg); animation-delay: -0.5s; }
+        .electron-orbit:nth-child(3) { transform: rotate(-60deg); animation-delay: -1s; }
+
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        /* 🧪 떨어지는 실험 기구 */
+        .beaker {
+            position: absolute; font-size: 40px; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.1));
+        }
+
+        /* 📊 점수판 */
+        #ui-layer {
+            position: absolute; top: 20px; left: 0; width: 100%;
+            display: flex; justify-content: space-around; font-weight: bold;
+            font-size: 20px; color: var(--main-blue); z-index: 50;
+        }
+
+        .back-link { text-decoration: none; color: #888; font-size: 14px; }
     </style>
 </head>
 <body>
 
     <div id="game-container">
-        <div id="score-board">SCORE: 0</div>
-        <a href="/" class="back-link">메인으로</a>
-        <div id="basket">비커(Beaker)</div>
-        
-        <div id="game-over">
-            <h2 style="color: var(--main-blue);">실험 종료!</h2>
-            <p id="final-score">최종 점수: 0</p>
-            <button onclick="location.reload()" style="padding: 10px 20px; cursor: pointer;">다시 도전</button>
+        <div id="welcome-overlay">
+            <div class="popup">
+                <h2 id="welcome-title">데이터 로딩 중...</h2>
+                <p id="welcome-msg">실험실 보안 확인 중입니다.</p>
+                <button id="start-btn" onclick="startGame()">실험 시작</button>
+            </div>
+        </div>
+
+        <div id="ui-layer">
+            <div id="score-text">실험 성공: 0</div>
+            <a href="/" class="back-link">연구실 메인으로</a>
+        </div>
+
+        <div id="player">
+            <div class="electron-orbit"></div>
+            <div class="electron-orbit"></div>
+            <div class="electron-orbit"></div>
+            <div class="atom-core"></div>
         </div>
     </div>
 
     <script>
         const container = document.getElementById('game-container');
-        const basket = document.getElementById('basket');
-        const scoreBoard = document.getElementById('score-board');
-        const elements = ['H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', '🧪', '🔬', '💎'];
-        
-        let score = 0;
-        let basketX = container.offsetWidth / 2;
-        let isGameOver = false;
+        const player = document.getElementById('player');
+        const scoreText = document.getElementById('score-text');
+        const overlay = document.getElementById('welcome-overlay');
+        const beakers = ['🧪', '⚗️', '🌡️', '🔬', '🍷'];
 
-        // 바구니 이동 (마우스 & 터치)
-        const moveBasket = (e) => {
-            if (isGameOver) return;
+        let score = 0;
+        let isGameRunning = false;
+        let playerX = container.offsetWidth / 2;
+
+        // 1. 연구원 이름 가져오기
+        async function fetchResearcherName() {
+            try {
+                const res = await fetch('/api/userinfo');
+                const data = await res.json();
+                if (data.loggedIn) {
+                    document.getElementById('welcome-title').innerText = `어서 오세요, ${data.user.nickname} 연구원님!`;
+                    document.getElementById('welcome-msg').innerText = "하늘에서 떨어지는 실험 도구들을 안전하게 수집하여\n연구를 완성해 주세요!";
+                } else {
+                    document.getElementById('welcome-title').innerText = `신규 연구원님 환영합니다!`;
+                    document.getElementById('welcome-msg').innerText = "로그인하시면 연구원님의 이름으로 실험이 기록됩니다.";
+                }
+            } catch (e) {
+                document.getElementById('welcome-title').innerText = "연구실 접속 완료";
+            }
+        }
+
+        // 2. 게임 시작
+        function startGame() {
+            overlay.style.display = 'none';
+            isGameRunning = true;
+            spawnBeaker();
+        }
+
+        // 3. 플레이어 이동 (마우스/터치)
+        const moveHandler = (e) => {
+            if (!isGameRunning) return;
             const rect = container.getBoundingClientRect();
             let x = (e.clientX || e.touches[0].clientX) - rect.left;
-            if (x < 40) x = 40;
-            if (x > container.offsetWidth - 40) x = container.offsetWidth - 40;
-            basketX = x;
-            basket.style.left = basketX + 'px';
+            if (x < 35) x = 35;
+            if (x > container.offsetWidth - 35) x = container.offsetWidth - 35;
+            playerX = x;
+            player.style.left = playerX + 'px';
         };
 
-        container.addEventListener('mousemove', moveBasket);
-        container.addEventListener('touchmove', moveBasket);
+        container.addEventListener('mousemove', moveHandler);
+        container.addEventListener('touchmove', (e) => { e.preventDefault(); moveHandler(e); }, {passive: false});
 
-        // 원소 생성 함수
-        function createEmoji() {
-            if (isGameOver) return;
-            const el = document.createElement('div');
-            el.className = 'element';
-            el.innerText = elements[Math.floor(Math.random() * elements.length)];
-            el.style.left = Math.random() * (container.offsetWidth - 30) + 'px';
-            el.style.top = '-50px';
-            container.appendChild(el);
+        // 4. 비커 생성 및 낙하
+        function spawnBeaker() {
+            if (!isGameRunning) return;
 
-            let fallSpeed = 3 + Math.random() * 4;
-            
+            const b = document.createElement('div');
+            b.className = 'beaker';
+            b.innerText = beakers[Math.floor(Math.random() * beakers.length)];
+            b.style.left = Math.random() * (container.offsetWidth - 50) + 25 + 'px';
+            b.style.top = '-50px';
+            container.appendChild(b);
+
+            let speed = 4 + Math.random() * 3;
+
             function fall() {
-                if (isGameOver) {
-                    el.remove();
-                    return;
-                }
-                let top = parseFloat(el.style.top);
-                el.style.top = (top + fallSpeed) + 'px';
+                if (!isGameRunning) { b.remove(); return; }
+                let top = parseFloat(b.style.top);
+                b.style.top = (top + speed) + 'px';
 
-                // 충돌 체크
-                if (top + 40 > container.offsetHeight - 80 && 
-                    top < container.offsetHeight - 30 &&
-                    Math.abs(parseFloat(el.style.left) - (basketX - 25)) < 50) {
-                    score += 10;
-                    scoreBoard.innerText = `SCORE: ${score}`;
-                    el.remove();
-                    return;
+                // 충돌 판정
+                if (top > container.offsetHeight - 120 && top < container.offsetHeight - 50) {
+                    let beakerX = parseFloat(b.style.left);
+                    if (Math.abs(beakerX - playerX) < 45) {
+                        score += 1;
+                        scoreText.innerText = `실험 성공: ${score}`;
+                        b.remove();
+                        return;
+                    }
                 }
 
-                // 바닥에 닿음
                 if (top > container.offsetHeight) {
-                    el.remove();
+                    b.remove();
                 } else {
                     requestAnimationFrame(fall);
                 }
             }
-            fall();
-            setTimeout(createEmoji, 800);
+            requestAnimationFrame(fall);
+            setTimeout(spawnBeaker, 1000 - Math.min(score * 5, 500)); // 점수가 오를수록 조금씩 빨라짐
         }
 
-        createEmoji();
+        fetchResearcherName();
     </script>
 </body>
 </html>
